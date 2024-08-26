@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de CPF na Black List</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        .negativado {
+            color: red;
+            font-size: 32px;
+            font-weight: bold;
+        }
+        .flash-message {
+            color: green;
+            font-size: 18px;
+            margin: 10px 0;
+        }
+        textarea {
+            width: 100%;
+            min-height: 50px; /* altura mínima */
+            resize: none; /* desativa o redimensionamento manual */
+            overflow: hidden; /* oculta a barra de rolagem */
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar" class="expand">
+        <div class="sidebar-logo">
+            <a href="#"><img src="{{ url_for('static', filename='logo.png') }}" alt="Logo"></a>
+        </div>
+        <div class="sidebar-nav">
+            <a class="sidebar-link" href="{{ url_for('index') }}">Pesquisar</a>
+            <a class="sidebar-link" href="{{ url_for('blacklist') }}">Black List</a>
+        </div>
+    </div>
+    <button class="toggle-btn" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="main">
+        <div class="wrapper">
+            <div class="center-content">
+                <h1>Consulta de CPF na Black List</h1>
+                <form action="{{ url_for('blacklist') }}" method="post">
+                    <label for="cpf">Digite o CPF:</label><br>
+                    <input type="text" id="cpf" name="cpf" required><br><br>
+                    <button type="submit" class="btn-presenca">Consultar</button>
+                </form>
+                <p> 
+                    {% if resultado %}
+                </p>
+                <div class="result">
+                    {% if negativado %}
+                        <p class="negativado">NEGATIVADO</p>
+                    {% endif %}
+                    <h2>Resultado da consulta:</h2>
+                    <p>Nome: {{ resultado.nome }}</p>
+                    <p>CPF: {{ resultado.cpf }}</p>
+                    <p>Motivo: {{ resultado.motivo }}</p>
+                    
+                    <form action="{{ url_for('generate_pdf') }}" method="post">
+                        <input type="hidden" name="nome" value="{{ resultado.nome }}">
+                        <input type="hidden" name="cpf" value="{{ resultado.cpf }}">
+                        <input type="hidden" name="motivo" value="{{ resultado.motivo }}">
+                        <button type="submit" class="btn-presenca">Compartilhar</button>
+                    </form>
+                </div>
+                {% elif mensagem %}
+                    <p>{{ mensagem }}</p>
+                {% endif %}
+                
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <div class="flash-message">
+                            {% for message in messages %}
+                                <p>{{ message }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+                
+                <h1>Adicionar CPF na Black List</h1>
+                <form action="{{ url_for('add_blacklist') }}" method="post">
+                    <label for="nome">Nome:</label><br>
+                    <input type="text" id="nome" name="nome" required><br><br>
+                    <label for="cpf_add">CPF:</label><br>
+                    <input type="text" id="cpf_add" name="cpf" required><br><br>
+                    <label for="motivo">Motivo:</label><br>
+                    <textarea id="motivo" name="motivo" required></textarea><br><br>
+                    <button type="submit" class="btn-presenca">Adicionar</button>
+                </form>
+
+                <h1>Excluir CPF da Black List</h1>
+                <form action="{{ url_for('delete_blacklist') }}" method="post">
+                    <label for="cpf_delete">Digite o CPF para excluir:</label><br>
+                    <input type="text" id="cpf_delete" name="cpf" required><br><br>
+                    <button type="submit" class="btn-presenca">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            var sidebar = document.getElementById('sidebar');
+            var main = document.querySelector('.main');
+            sidebar.classList.toggle('expand');
+            if (sidebar.classList.contains('expand')) {
+                main.style.marginLeft = '260px';
+            } else {
+                main.style.marginLeft = '70px';
+            }
+        }
+
+        function adjustHeight(element) {
+            element.style.height = 'auto'; // Reseta a altura
+            element.style.height = (element.scrollHeight) + 'px'; // Ajusta a altura de acordo com o scrollHeight
+        }
+
+        document.addEventListener('input', function(event) {
+            if (event.target.tagName.toLowerCase() === 'textarea') {
+                adjustHeight(event.target);
+            }
+        });
+
+        // Ajusta a altura inicial dos textareas se tiverem conteúdo inicial
+        document.querySelectorAll('textarea').forEach(textarea => {
+            adjustHeight(textarea);
+        });
+    </script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</body>
+</html>

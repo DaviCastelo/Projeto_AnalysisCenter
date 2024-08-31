@@ -340,3 +340,64 @@ body {
     max-width: 100%;
     height: auto;
 }
+
+/* styles.css */
+
+body {
+    font-family: 'Poppins', sans-serif;
+}
+
+.sidebar-nav {
+    padding: 20px;
+}
+
+.sidebar-link {
+    display: block;
+    padding: 10px;
+    color: #333;
+    text-decoration: none;
+}
+
+.sidebar-link:hover {
+    background-color: #f4f4f4;
+}
+
+.profile-info p {
+    font-size: 16px;
+    margin: 10px 0;
+}
+
+.btn-logout {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #9500ff;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+
+.btn-logout:hover {
+    background-color: #7e00cc;
+}
+
+.eye-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(50%);
+    cursor: pointer;
+    pointer-events: auto; /* Assegura que o clique funcione no ícone */
+}
+
+.password-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.logo {
+    display: block; /* Garante que a imagem seja exibida como bloco */
+    margin: 0 auto 20px; /* Centraliza a imagem horizontalmente e adiciona uma margem inferior */
+    max-width: 100%; /* Limita a largura máxima para evitar que a imagem saia da tela */
+    height: auto; /* Ajusta a altura proporcionalmente */
+}

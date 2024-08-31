@@ -1,20 +1,21 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, send_file
+from flask import Flask, render_template, request, redirect, url_for, flash, session, send_file
 from fpdf import FPDF
+from werkzeug.security import generate_password_hash, check_password_hash
 import mysql.connector
 from mysql.connector import Error
 import os
+from functools import wraps
 
 app = Flask(__name__)
 app.secret_key = '1234'  # Substitua com uma chave secreta adequada
 
-# Função para conectar ao banco de dados MySQL
 def connect_to_database():
     try:
         connection = mysql.connector.connect(
             host='127.0.0.1',
             database='analysiscenter',
-            user='root',  # Substitua com seu usuário MySQL
-            password='Filhotes3'  # Substitua com sua senha MySQL
+            user='root',
+            password='Filhotes3'
         )
         if connection.is_connected():
             print('Conexão ao MySQL bem-sucedida.')
@@ -23,16 +24,102 @@ def connect_to_database():
         print(f'Erro ao conectar ao MySQL: {e}')
         return None
 
-# Rota para a página inicial
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('Você precisa estar logado para acessar esta página.')
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 @app.route('/')
+def home():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    return redirect(url_for('index'))
+
+@app.route('/index')
+@login_required
 def index():
     return render_template('index.html')
 
-# Rota para a página Black List
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        cpf = request.form.get('cpf', '')
+        senha = request.form.get('senha', '')
+        nome = request.form.get('nome', '')
+        email = request.form.get('email', '')  # Armazenar o e-mail, mas não usar para login
+        
+        hashed_password = generate_password_hash(senha)
+
+        connection = connect_to_database()
+        if connection:
+            cursor = connection.cursor()
+            query = "INSERT INTO users (cpf, senha, nome, email) VALUES (%s, %s, %s, %s)"
+            try:
+                cursor.execute(query, (cpf, hashed_password, nome, email))
+                connection.commit()
+                flash('Registro realizado com sucesso! Faça o login.')
+                return redirect(url_for('login'))
+            except mysql.connector.IntegrityError:
+                flash('CPF já cadastrado. Tente outro.')
+                return redirect(url_for('register'))
+            finally:
+                cursor.close()
+                connection.close()
+        else:
+            flash('Erro ao conectar ao banco de dados.')
+            return redirect(url_for('register'))
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        cpf = request.form.get('cpf', '')
+        senha = request.form.get('senha', '')
+
+        # Verifique se o campo CPF foi preenchido
+        if not cpf:
+            flash('O CPF deve ser preenchido.')
+            return redirect(url_for('login'))
+
+        connection = connect_to_database()
+        if connection:
+            cursor = connection.cursor(dictionary=True)
+            query = "SELECT * FROM users WHERE cpf = %s"
+            cursor.execute(query, (cpf,))
+            user = cursor.fetchone()
+            cursor.close()
+            connection.close()
+
+            if user and check_password_hash(user['senha'], senha):
+                session['user_id'] = user['id']
+                session['email'] = user['email']
+                flash('Login realizado com sucesso!')
+                return redirect(url_for('index'))  # Redireciona para a página index
+            else:
+                flash('CPF ou senha incorretos.')
+                return redirect(url_for('login'))
+        else:
+            flash('Erro ao conectar ao banco de dados.')
+            return redirect(url_for('login'))
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    session.pop('user_id', None)
+    session.pop('email', None)
+    flash('Logout realizado com sucesso!')
+    return redirect(url_for('login'))
+
 @app.route('/blacklist', methods=['GET', 'POST'])
+@login_required
 def blacklist():
     if request.method == 'POST':
-        cpf = request.form['cpf']
+        cpf = request.form.get('cpf', '')
         connection = connect_to_database()
         if connection:
             cursor = connection.cursor(dictionary=True)
@@ -40,7 +127,6 @@ def blacklist():
                 query = "SELECT * FROM black_list WHERE cpf = %s"
                 cursor.execute(query, (cpf,))
                 result = cursor.fetchone()
-                cursor.fetchall()  # Certifique-se de que todos os resultados sejam lidos
                 if result:
                     negativado = 'NEGATIVADO'
                     return render_template('blacklist.html', resultado=result, negativado=negativado)
@@ -54,12 +140,12 @@ def blacklist():
     else:
         return render_template('blacklist.html')
 
-# Rota para adicionar um CPF à Black List
 @app.route('/add_blacklist', methods=['POST'])
+@login_required
 def add_blacklist():
-    nome = request.form['nome']
-    cpf = request.form['cpf']
-    motivo = request.form['motivo']
+    nome = request.form.get('nome', '')
+    cpf = request.form.get('cpf', '')
+    motivo = request.form.get('motivo', '')
     
     connection = connect_to_database()
     if connection:
@@ -75,10 +161,10 @@ def add_blacklist():
     else:
         return 'Erro ao conectar ao banco de dados'
 
-# Rota para excluir um CPF da Black List
 @app.route('/delete_blacklist', methods=['POST'])
+@login_required
 def delete_blacklist():
-    cpf = request.form['cpf']
+    cpf = request.form.get('cpf', '')
     
     connection = connect_to_database()
     if connection:
@@ -95,26 +181,12 @@ def delete_blacklist():
         flash('Erro ao conectar ao banco de dados')
         return redirect(url_for('blacklist'))
 
-# Função para dividir texto longo em múltiplas linhas
-def wrap_text(text, max_width, pdf):
-    lines = []
-    words = text.split()
-    current_line = ""
-    for word in words:
-        if pdf.get_string_width(current_line + word + " ") <= max_width:
-            current_line += word + " "
-        else:
-            lines.append(current_line)
-            current_line = word + " "
-    lines.append(current_line)
-    return lines
-
-# Rota para gerar PDF
 @app.route('/generate_pdf', methods=['POST'])
+@login_required
 def generate_pdf():
-    nome = request.form['nome']
-    cpf = request.form['cpf']
-    motivo = request.form['motivo']
+    nome = request.form.get('nome', '')
+    cpf = request.form.get('cpf', '')
+    motivo = request.form.get('motivo', '')
 
     pdf = FPDF()
     pdf.add_page()
@@ -122,37 +194,28 @@ def generate_pdf():
     pdf.set_font('Arial', 'B', 16)
     pdf.cell(0, 10, 'Resultado da consulta na Black List', 0, 1, 'C')
     
-    # Adicionar "NEGATIVADO" centralizado e em vermelho
     pdf.set_font('Arial', 'B', 16)
-    pdf.set_text_color(255, 0, 0)  # Define a cor do texto para vermelho (RGB)
+    pdf.set_text_color(255, 0, 0)
     pdf.cell(0, 10, 'NEGATIVADO', 0, 1, 'C')
     
-    # Resetar a cor do texto para preto
     pdf.set_text_color(0, 0, 0)
     
     pdf.set_font('Arial', '', 12)
     pdf.cell(0, 10, f'Nome: {nome}', 0, 1)
     pdf.cell(0, 10, f'CPF: {cpf}', 0, 1)
     
-    # Dividir o texto do motivo em múltiplas linhas
-    max_width = 190  # Largura máxima da célula em mm
-    lines = wrap_text(motivo, max_width, pdf)
-    pdf.cell(0, 10, 'Motivo:', 0, 1)
-    for line in lines:
-        pdf.cell(0, 10, line, 0, 1)
+    pdf.multi_cell(0, 10, f'Motivo: {motivo}', 0, 1)
     
-    # Adicionar espaçamento antes da imagem
-    pdf.ln(10)  # Adicionar espaçamento após o texto
+    pdf.ln(10)
+
+    image_path = 'fotos/Imagem_do_WhatsApp_de_2024-06-18_a_s_22.26.19_d93155f5.jpg'
     
-    # Atualizar caminho da imagem e reduzir o tamanho pela metade
-    image_path = 'fotos/Imagem do WhatsApp de 2024-06-18 à(s) 22.26.19_d93155f5.jpg'
-    image_width = 50  # Largura da imagem em mm
-    pdf_width = pdf.w - 2 * pdf.l_margin  # Largura da página menos margens
-    x = (pdf_width - image_width) / 2 + 5  # Posição x ajustada para centralizar a imagem com pequeno deslocamento à direita
-    y = pdf.get_y()  # Posição y atual para garantir que a imagem fique abaixo do texto
-    
-    # Adicionar a imagem
-    pdf.image(image_path, x=x, y=y, w=image_width)
+    if os.path.exists(image_path):
+        pdf_width = pdf.w - 2 * pdf.l_margin
+        image_width = 50
+        x = (pdf_width - image_width) / 2 + pdf.l_margin
+        y = pdf.get_y()
+        pdf.image(image_path, x=x, y=y, w=image_width)
     
     output_filename = f"{nome}_blacklist.pdf"
     pdf.output(output_filename)

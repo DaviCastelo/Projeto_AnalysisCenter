@@ -20,7 +20,7 @@ def connect_to_database():
         if connection.is_connected():
             print('Conexão ao MySQL bem-sucedida.')
             return connection
-    except Error as e:
+    except Error as e: 
         print(f'Erro ao conectar ao MySQL: {e}')
         return None
 
@@ -80,7 +80,6 @@ def login():
         cpf = request.form.get('cpf', '')
         senha = request.form.get('senha', '')
 
-        # Verifique se o campo CPF foi preenchido
         if not cpf:
             flash('O CPF deve ser preenchido.')
             return redirect(url_for('login'))
@@ -91,6 +90,7 @@ def login():
             query = "SELECT * FROM users WHERE cpf = %s"
             cursor.execute(query, (cpf,))
             user = cursor.fetchone()
+            cursor.fetchall()  # Ensure all results are fetched or processed
             cursor.close()
             connection.close()
 
@@ -98,7 +98,7 @@ def login():
                 session['user_id'] = user['id']
                 session['email'] = user['email']
                 flash('Login realizado com sucesso!')
-                return redirect(url_for('index'))  # Redireciona para a página index
+                return redirect(url_for('index'))
             else:
                 flash('CPF ou senha incorretos.')
                 return redirect(url_for('login'))
@@ -127,6 +127,7 @@ def blacklist():
                 query = "SELECT * FROM black_list WHERE cpf = %s"
                 cursor.execute(query, (cpf,))
                 result = cursor.fetchone()
+                cursor.fetchall()  # Ensure all results are fetched or processed
                 if result:
                     negativado = 'NEGATIVADO'
                     return render_template('blacklist.html', resultado=result, negativado=negativado)
@@ -179,6 +180,55 @@ def delete_blacklist():
         return redirect(url_for('blacklist'))
     else:
         flash('Erro ao conectar ao banco de dados')
+        return redirect(url_for('blacklist'))
+
+@app.route('/edit_blacklist', methods=['POST', 'GET'])
+@login_required
+def edit_blacklist():
+    if request.method == 'POST':
+        cpf = request.form.get('cpf', '')
+        connection = connect_to_database()
+        if connection:
+            cursor = connection.cursor(dictionary=True)
+            query = "SELECT * FROM black_list WHERE cpf = %s"
+            cursor.execute(query, (cpf,))
+            result = cursor.fetchone()
+            cursor.fetchall()  # Ensure all results are fetched or processed
+            cursor.close()
+            connection.close()
+
+            if result:
+                return render_template('edit_blacklist.html', result=result)
+            else:
+                flash('CPF não encontrado na Black List.')
+                return redirect(url_for('blacklist'))
+        else:
+            flash('Erro ao conectar ao banco de dados.')
+            return redirect(url_for('blacklist'))
+    return redirect(url_for('blacklist'))
+
+@app.route('/update_blacklist', methods=['POST'])
+@login_required
+def update_blacklist():
+    old_cpf = request.form.get('old_cpf', '')  # CPF antigo para buscar o registro a ser atualizado
+    new_cpf = request.form.get('new_cpf', '')  # Novo CPF
+    nome = request.form.get('nome', '')
+    motivo = request.form.get('motivo', '')
+
+    connection = connect_to_database()
+    if connection:
+        cursor = connection.cursor()
+        # Atualizar o registro no banco de dados
+        query = "UPDATE black_list SET nome = %s, cpf = %s, motivo = %s WHERE cpf = %s"
+        cursor.execute(query, (nome, new_cpf, motivo, old_cpf))
+        connection.commit()
+        cursor.close()
+        connection.close()
+
+        flash('Informações atualizadas com sucesso!')
+        return redirect(url_for('blacklist'))
+    else:
+        flash('Erro ao conectar ao banco de dados.')
         return redirect(url_for('blacklist'))
 
 @app.route('/generate_pdf', methods=['POST'])

@@ -28,14 +28,12 @@
 <body>
     <div id="sidebar" class="expand">
         <div class="sidebar-logo">
-            <a href="#"><img src="/fotos\imagem.jpg" alt="Logo"></a>
+            <a href="#"><img src="/fotos/imagem.jpg" alt="Logo"></a>
         </div>
         <div class="sidebar-nav">
             <a class="sidebar-link" href="{{ url_for('index') }}">Pesquisar</a>
             <a class="sidebar-link" href="{{ url_for('blacklist') }}">Black List</a>
-            
         </div>
-        
     </div>
     <button class="toggle-btn" onclick="toggleSidebar()">
         <i class="fas fa-bars"></i>
@@ -49,6 +47,7 @@
                     <input type="text" id="cpf" name="cpf" required><br><br>
                     <button type="submit" class="btn-presenca">Consultar</button>
                 </form>
+
                 <p> 
                     {% if resultado %}
                 </p>
@@ -66,6 +65,12 @@
                         <input type="hidden" name="cpf" value="{{ resultado.cpf }}">
                         <input type="hidden" name="motivo" value="{{ resultado.motivo }}">
                         <button type="submit" class="btn-presenca">Compartilhar</button>
+                    </form>
+
+                    <!-- Adiciona o botão de editar -->
+                    <form action="{{ url_for('edit_blacklist') }}" method="post">
+                        <input type="hidden" name="cpf" value="{{ resultado.cpf }}">
+                        <button type="submit" class="btn-presenca">Editar</button>
                     </form>
                 </div>
                 {% elif mensagem %}
@@ -89,7 +94,7 @@
                     <label for="cpf_add">CPF:</label><br>
                     <input type="text" id="cpf_add" name="cpf" required><br><br>
                     <label for="motivo">Motivo:</label><br>
-                    <textarea id="motivo" name="motivo" required></textarea><br><br>
+                    <textarea id="motivo" name="motivo" required style="font-size: 18px;"></textarea>
                     <button type="submit" class="btn-presenca">Adicionar</button>
                 </form>
 
@@ -126,7 +131,6 @@
             }
         });
 
-        
         document.querySelectorAll('textarea').forEach(textarea => {
             adjustHeight(textarea);
         });

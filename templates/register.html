@@ -24,11 +24,14 @@
             margin: 0 auto 20px auto; /* Centraliza e adiciona margem inferior */
             max-width: 100%; /* Limita o tamanho da imagem para não exceder a largura do container */
         }
+        .back-button {
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="container mt-5">
-        <img src="/fotos/imagem.jpg">
+        <img src="/fotos/imagem.jpg" alt="Imagem de Cadastro" class="page-image">
         <h2 class="text-center">Cadastro</h2>
         <div class="row justify-content-center">
             <div class="col-md-4">
@@ -59,4 +62,29 @@
                     <div class="mb-3 password-container">
                         <label for="senha" class="form-label">Senha</label>
                         <input type="password" class="form-control" id="senha" name="senha" required>
-                        <i class="fa-solid fa-eye eye-icon" id="togglePassword"></i
+                        <i class="fa-solid fa-eye eye-icon" id="togglePassword"></i>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100" style="background-color: #9500ff;">Cadastrar</button>
+                </form>
+                <div class="text-center back-button">
+                    <a href="{{ url_for('login') }}" class="btn btn-secondary">Voltar ao Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordField = document.getElementById('senha');
+
+        togglePassword.addEventListener('click', function () {
+            // Toggle the type attribute
+            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField.setAttribute('type', type);
+
+            // Toggle the eye icon
+            this.classList.toggle('fa-eye-slash');
+        });
+    </script>
+</body>
+</html>

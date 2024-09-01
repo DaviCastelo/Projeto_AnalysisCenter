@@ -110,10 +110,11 @@ def login():
 @app.route('/logout')
 @login_required
 def logout():
-    session.pop('user_id', None)
-    session.pop('email', None)
+    session.pop('user_id', None)  # Remove o ID do usuário da sessão
+    session.pop('email', None)    # Remove o e-mail da sessão
     flash('Logout realizado com sucesso!')
-    return redirect(url_for('login'))
+    return redirect(url_for('login'))  # Redireciona para a página de login
+
 
 @app.route('/blacklist', methods=['GET', 'POST'])
 @login_required

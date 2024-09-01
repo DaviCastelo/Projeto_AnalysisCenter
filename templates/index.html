@@ -6,6 +6,33 @@
     <title>Gerador de PDF</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Adicione este estilo ao seu CSS para posicionar o botão de logout */
+        #sidebar {
+            display: flex;
+            flex-direction: column;
+            height: 100vh; /* Faz a sidebar ocupar toda a altura da tela */
+            padding: 10px;
+            background-color: #9500ff;
+            border-right: 1px solid #dee2e6;
+        }
+        .sidebar-nav {
+            flex: 1; /* Faz o menu ocupar o espaço restante */
+        }
+        .logout-container {
+            margin-top: auto; /* Empurra o botão para o final da sidebar */
+        }
+        .logout-button {
+            background-color: #dc3545; /* Cor de fundo do botão */
+            color: white; /* Cor do texto do botão */
+            border: none; /* Remove a borda do botão */
+            padding: 10px 20px; /* Adiciona espaçamento interno */
+            cursor: pointer; /* Adiciona um cursor de ponteiro ao passar o mouse */
+        }
+        .logout-button:hover {
+            background-color: #c82333; /* Cor de fundo do botão ao passar o mouse */
+        }
+    </style>
 </head>
 <body>
     <div id="sidebar" class="expand">
@@ -15,9 +42,12 @@
         <div class="sidebar-nav">
             <a class="sidebar-link" href="{{ url_for('index') }}">Pesquisar</a>
             <a class="sidebar-link" href="{{ url_for('blacklist') }}">Black List</a>
-            
         </div>
-        
+        <div class="logout-container">
+            <button class="logout-button" onclick="logout()">
+                Logout
+            </button>
+        </div>
     </div>
     <button class="toggle-btn" onclick="toggleSidebar()">
         <i class="fas fa-bars"></i>
@@ -99,6 +129,10 @@
                 console.error('Erro ao consultar a API:', error);
                 document.getElementById('cpf-info').innerHTML = `<p>Erro ao consultar a API: ${error.message}</p>`;
             });
+        }
+
+        function logout() {
+            window.location.href = "{{ url_for('logout') }}";
         }
     </script>
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>

@@ -15,7 +15,8 @@ def connect_to_database():
             host='127.0.0.1',
             database='analysiscenter',
             user='root',
-            password='Filhotes3'
+            password='gn020603'
+            # password='Filhotes3'
         )
         if connection.is_connected():
             print('Conexão ao MySQL bem-sucedida.')
@@ -24,23 +25,23 @@ def connect_to_database():
         print(f'Erro ao conectar ao MySQL: {e}')
         return None
 
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            flash('Você precisa estar logado para acessar esta página.')
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated_function
+# def login_required(f):
+#     @wraps(f)
+#     def decorated_function(*args, **kwargs):
+#         if 'user_id' not in session:
+#             flash('Você precisa estar logado para acessar esta página.')
+#             return redirect(url_for('login'))
+#         return f(*args, **kwargs)
+#     return decorated_function
 
 @app.route('/')
 def home():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
+    # if 'user_id' not in session:
+    #     return redirect(url_for('login'))
     return redirect(url_for('index'))
 
 @app.route('/index')
-@login_required
+# @login_required
 def index():
     return render_template('index.html')
 
@@ -108,7 +109,7 @@ def login():
     return render_template('login.html')
 
 @app.route('/logout')
-@login_required
+# @login_required
 def logout():
     session.pop('user_id', None)  # Remove o ID do usuário da sessão
     session.pop('email', None)    # Remove o e-mail da sessão
@@ -117,7 +118,6 @@ def logout():
 
 
 @app.route('/blacklist', methods=['GET', 'POST'])
-@login_required
 def blacklist():
     if request.method == 'POST':
         cpf = request.form.get('cpf', '')
@@ -143,7 +143,7 @@ def blacklist():
         return render_template('blacklist.html')
 
 @app.route('/add_blacklist', methods=['POST'])
-@login_required
+# @login_required
 def add_blacklist():
     nome = request.form.get('nome', '')
     cpf = request.form.get('cpf', '')
@@ -164,7 +164,7 @@ def add_blacklist():
         return 'Erro ao conectar ao banco de dados'
 
 @app.route('/delete_blacklist', methods=['POST'])
-@login_required
+# @login_required
 def delete_blacklist():
     cpf = request.form.get('cpf', '')
     
@@ -184,7 +184,7 @@ def delete_blacklist():
         return redirect(url_for('blacklist'))
 
 @app.route('/edit_blacklist', methods=['POST', 'GET'])
-@login_required
+# @login_required
 def edit_blacklist():
     if request.method == 'POST':
         cpf = request.form.get('cpf', '')
@@ -209,7 +209,7 @@ def edit_blacklist():
     return redirect(url_for('blacklist'))
 
 @app.route('/update_blacklist', methods=['POST'])
-@login_required
+# @login_required
 def update_blacklist():
     old_cpf = request.form.get('old_cpf', '')  # CPF antigo para buscar o registro a ser atualizado
     new_cpf = request.form.get('new_cpf', '')  # Novo CPF
@@ -233,7 +233,7 @@ def update_blacklist():
         return redirect(url_for('blacklist'))
 
 @app.route('/generate_pdf', methods=['POST'])
-@login_required
+# @login_required
 def generate_pdf():
     nome = request.form.get('nome', '')
     cpf = request.form.get('cpf', '')

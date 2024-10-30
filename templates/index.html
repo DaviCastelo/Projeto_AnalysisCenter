@@ -41,6 +41,10 @@
         /* Estilos do conteúdo principal */
         .main {
             padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
             transition: margin-left 0.3s;
         }
 
@@ -99,7 +103,17 @@
                     <input type="text" id="rg" name="rg"><br><br>
 
                     <label for="address">Endereço:</label><br>
-                    <input type="text" id="address" name="address" required><br><br>
+                    <textarea id="address" name="address" rows="1" style="width: calc(100% - 22px); overflow-y: hidden;" oninput="adjustHeight(this)" required></textarea><br><br>
+                    
+                    <script>
+                    function adjustHeight(element) {
+                        // Reseta a altura para calcular o novo tamanho
+                        element.style.height = "auto";
+                        // Define a altura com base no scroll interno da caixa
+                        element.style.height = (element.scrollHeight) + "px";
+                    }
+                    </script>
+                    
 
                     <button type="submit" class="btn-presenca">Gerar PDF</button>
                 </form>

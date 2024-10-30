@@ -271,7 +271,7 @@ def generate_pdf():
     output_filename = f"{nome}_blacklist.pdf"
     pdf.output(output_filename)
 
-    return send_file(output_filename, as_attachment=True, download_name=output_filename)
+    # return send_file(output_filename, as_attachment=True, download_name=output_filename)
 
 if __name__ == '__main__':
     app.run(debug=True)

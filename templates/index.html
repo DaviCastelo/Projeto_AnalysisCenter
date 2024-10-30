@@ -119,6 +119,41 @@
             }
         }
 
+        function formatCPF(cpf) {
+            return cpf
+                .replace(/\D/g, '') 
+                .replace(/(\d{3})(\d)/, '$1.$2') 
+                .replace(/(\d{3})(\d)/, '$1.$2') 
+                .replace(/(\d{3})(\d{1,2})$/, '$1-$2'); 
+        }
+        
+        function adicionarBlacklist(nome, cpf, motivo) {
+            const cpfFormatado = formatCPF(cpf);
+            const formData = new URLSearchParams();
+            formData.append('nome', nome);
+            formData.append('cpf', cpfFormatado);
+            formData.append('motivo', motivo);
+
+            fetch('/add_blacklist', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: formData.toString()
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Erro ao adicionar na blacklist');
+                return response.text();
+            })
+            .then(data => {
+                console.log('Adicionado na blacklist:', data);
+            })
+            .catch(error => {
+                console.error('Erro ao adicionar na blacklist:', error);
+            });
+        }
+
+
         function consultarCPF() {
             var cpf = document.getElementById('cpf').value;
             var urlCpfCompleto = `https://api.gw.cellereit.com.br/bg-check/cpf-completo?cpf=${cpf}`;
@@ -230,12 +265,30 @@
                     `;
                 }
 
-                
+                if (dataValidacaoFiscal.Processos && Array.isArray(dataValidacaoFiscal.Processos)) {
+                    let adicionarNaBlacklist = false;
+
+                    dataValidacaoFiscal.Processos.forEach(processo => {
+                        if (processo.TribunalTipo === 'CRIMINAL') {
+                            const partesRequeridas = processo.Partes.some(parte => parte.Tipo === 'Requerido');
+                            if (partesRequeridas) {
+                                adicionarNaBlacklist = true; 
+                            }
+                        }
+                    });
+
+                    if (adicionarNaBlacklist) {
+                        adicionarBlacklist(nome, cpf, 'processo criminal');
+                    }
+                }
+
+
                 if (dataMandadosPrisão.Mandados && Array.isArray(dataMandadosPrisão.Mandados)) {
                     if (dataMandadosPrisão.Mandados.length > 0) {
                         document.getElementById('cpf-info').innerHTML += `
                             <p><strong>Possui mandado de prisão</strong></p>
                         `;
+                        adicionarBlacklist(dataCpfCompleto.CadastroPessoaFisica.Nome, cpf, "mandado de prisão");
                     } else {
                         document.getElementById('cpf-info').innerHTML += `
                             <p><strong>Não existem mandados de prisão para este CPF.</strong></p>

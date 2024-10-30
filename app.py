@@ -1,10 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, send_file
+from flask import Flask, json, make_response, render_template, request, redirect, url_for, flash, session, send_file
 from fpdf import FPDF
 from werkzeug.security import generate_password_hash, check_password_hash
 import mysql.connector
 from mysql.connector import Error
 import os
 from functools import wraps
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = '1234'  # Substitua com uma chave secreta adequada
@@ -231,6 +232,125 @@ def update_blacklist():
     else:
         flash('Erro ao conectar ao banco de dados.')
         return redirect(url_for('blacklist'))
+    
+    
+@app.route('/gerar_pdf_consulta', methods=['POST'])
+def generate_pdf_cpf():
+    try:
+        nome = request.form.get('name', '')
+        cpf = request.form.get('cpf', '')
+        telefone = request.form.get('telefone', '')
+        email = request.form.get('email', '')
+        rg = request.form.get('rg', '')
+        endereco = request.form.get('address', '')
+        situacao = request.form.get('situacao', '')
+        mandado = request.form.get('mandado', '')
+
+        processos = request.form.getlist('processo[]')
+        partes = request.form.getlist('partes[]')
+
+        pdf = FPDF()
+        pdf.add_page()
+
+        pdf.set_font('Arial', 'B', 16)
+        pdf.cell(0, 10, 'Resultado da consulta', 0, 1, 'C')
+
+        pdf.set_font('Arial', '', 12)
+        pdf.cell(0, 10, f'Situação na Receita Federal: {situacao}', 0, 1, 'C')
+        pdf.cell(0, 10, f'Nome: {nome}', 0, 1)
+        pdf.cell(0, 10, f'CPF: {cpf}', 0, 1)
+        pdf.cell(0, 10, f'Telefone: {telefone}', 0, 1)
+        pdf.cell(0, 10, f'Email: {email}', 0, 1)
+        pdf.cell(0, 10, f'RG: {rg}', 0, 1)
+        pdf.multi_cell(0, 10, f'Endereço: {endereco}', 0, 1)
+        pdf.cell(0, 10, '', 0, 1)
+
+        pdf.set_fill_color(0, 5, 125)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_font('Arial', 'B', 14)
+        pdf.cell(0, 10, 'MANDADOS DE PRISÃO :', 0, 1, 'C', 1)
+        pdf.cell(0, 10, '', 0, 1)
+        pdf.set_text_color(0, 0, 0)
+        pdf.cell(0, 10, f'{mandado}', 0, 1)
+        pdf.cell(0, 10, '', 0, 1)
+
+        pdf.set_fill_color(0, 5, 125)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_font('Arial', 'B', 14)
+        pdf.cell(0, 10, 'PROCESSOS ENCONTRADOS :', 0, 1, 'C', 1)
+        pdf.set_text_color(0, 0, 0)
+
+        pdf.set_font('Arial', '', 12)
+        pdf.cell(0, 10, '', 0, 1)
+
+        print("Processos recebidos:", processos) 
+
+        if processos:
+            for processo in processos:
+                if processo.strip():
+                    try:
+                        processo_data = json.loads(processo)
+
+                        pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+                        pdf.cell(0, 10, '', 0, 1)
+                        pdf.cell(0, 10, f'Número do Processo: {processo_data.get("Numero", "N/A")}', 0, 1)
+                        pdf.cell(0, 10, f'Tipo: {processo_data.get("Tipo", "N/A")}', 0, 1)
+                        pdf.multi_cell(0, 10, f'Nome do Tribunal: {processo_data.get("TribunalNome", "N/A")}', 0, 1)
+                        pdf.cell(0, 10, f'Tipo do Tribunal: {processo_data.get("TribunalTipo", "N/A")}', 0, 1)
+                        pdf.multi_cell(0, 10, f'Assunto: {processo_data.get("Assunto", "N/A")}', 0, 1)
+                        pdf.cell(0, 10, f'Situação: {processo_data.get("Situacao", "N/A")}', 0, 1)
+
+                        ultima_atualizacao_str = processo_data.get("UltimaAtualizacaoData", "N/A")
+
+                        if ultima_atualizacao_str != "N/A":
+                            try:
+                                ultima_atualizacao = datetime.fromisoformat(ultima_atualizacao_str)
+                                ultima_atualizacao_formatada = ultima_atualizacao.strftime("%d/%m/%Y")
+                            except ValueError:
+                                ultima_atualizacao_formatada = "Data inválida"
+                        else:
+                            ultima_atualizacao_formatada = "N/A"
+
+                        pdf.cell(0, 10, f'Data da última atualização: {ultima_atualizacao_formatada}', 0, 1)
+
+                        partes = processo_data.get("Partes", [])
+                        pdf.cell(0, 10, 'Partes', 0, 1, 'C')
+                        pdf.cell(100, 10, 'Nome', 1)
+                        pdf.cell(100, 10, 'Tipo', 1)
+                        pdf.ln()
+
+                        if partes:
+                            for parte in partes:
+                                nome = parte.get("Nome", "N/A")
+                                tipo = parte.get("Tipo", "N/A")
+                                pdf.set_font('Arial', 'B', 9)
+                                pdf.cell(100, 10, parte.get("Nome", "N/A"), 1)
+                                pdf.cell(100, 10, parte.get("Tipo", "N/A"), 1)
+                                pdf.ln()
+                                pdf.set_font('Arial', '', 12)
+                        else:
+                            pdf.cell(0, 10, 'Nenhuma parte envolvida.', 0, 1)
+
+                        pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+                        pdf.cell(0, 10, '', 0, 1)
+
+                    except Exception as e:
+                        print(f"Erro ao processar o processo: {str(e)}")
+        else:
+            pdf.set_font('Arial', 'B', 14)
+            pdf.cell(0, 10, 'Nenhum processo encontrado para este CPF', 0, 1)
+
+        response = make_response(pdf.output(dest='S').encode('latin1'))
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'attachment; filename={nome}-{cpf}.pdf'
+
+        return response
+
+    except Exception as e:
+        print(f"Erro ao gerar PDF: {e}")  # Log do erro
+        return {"error": "Ocorreu um erro ao gerar o PDF."}, 500
+
+
 
 @app.route('/generate_pdf', methods=['POST'])
 # @login_required
@@ -271,7 +391,8 @@ def generate_pdf():
     output_filename = f"{nome}_blacklist.pdf"
     pdf.output(output_filename)
 
-    # return send_file(output_filename, as_attachment=True, download_name=output_filename)
+    return send_file(output_filename, as_attachment=True, download_name=output_filename)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

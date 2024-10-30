@@ -52,6 +52,12 @@
             max-width: 600px;
             margin: auto;
         }
+
+        #loading {
+            margin-top: 10px;
+            font-size: 16px;
+            color: #333;
+        }
     </style>
 </head>
 
@@ -79,7 +85,7 @@
         <div class="wrapper">
             <div class="center-content">
                 <h1>Preencha as Informações</h1>
-                <form action="/generate_pdf" method="post">
+                <form id="consulta-form" action="/generate_pdf" method="post">
                     <label for="name">Nome Completo:</label><br>
                     <input type="text" id="name" name="name" required><br><br>
 
@@ -89,6 +95,7 @@
                     <label for="cpf">CPF:</label><br>
                     <input type="text" id="cpf" name="cpf" required><br>
                     <button type="button" onclick="consultarCPF()">Consultar</button><br><br>
+                    <div id="loading" style="display: none;">Carregando...</div>
 
                     <div id="cpf-info"></div>
                     <br />
@@ -103,19 +110,18 @@
                     <input type="text" id="rg" name="rg"><br><br>
 
                     <label for="address">Endereço:</label><br>
-                    <textarea id="address" name="address" rows="1" style="width: calc(100% - 22px); overflow-y: hidden;" oninput="adjustHeight(this)" required></textarea><br><br>
-                    
-                    <script>
-                    function adjustHeight(element) {
-                        // Reseta a altura para calcular o novo tamanho
-                        element.style.height = "auto";
-                        // Define a altura com base no scroll interno da caixa
-                        element.style.height = (element.scrollHeight) + "px";
-                    }
-                    </script>
-                    
+                    <textarea id="address" name="address" rows="1" style="width: calc(100% - 22px); overflow-y: hidden;"
+                        oninput="adjustHeight(this)" required></textarea><br><br>
 
-                    <button type="submit" class="btn-presenca">Gerar PDF</button>
+                    <script>
+                        function adjustHeight(element) {
+                            element.style.height = "auto";
+                            element.style.height = (element.scrollHeight) + "px";
+                        }
+                    </script>
+
+
+                    <!-- <button type="submit" class="btn-presenca">Gerar PDF</button> -->
                 </form>
             </div>
         </div>
@@ -135,12 +141,12 @@
 
         function formatCPF(cpf) {
             return cpf
-                .replace(/\D/g, '') 
-                .replace(/(\d{3})(\d)/, '$1.$2') 
-                .replace(/(\d{3})(\d)/, '$1.$2') 
-                .replace(/(\d{3})(\d{1,2})$/, '$1-$2'); 
+                .replace(/\D/g, '')
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
         }
-        
+
         function adicionarBlacklist(nome, cpf, motivo) {
             const cpfFormatado = formatCPF(cpf);
             const formData = new URLSearchParams();
@@ -155,20 +161,31 @@
                 },
                 body: formData.toString()
             })
-            .then(response => {
-                if (!response.ok) throw new Error('Erro ao adicionar na blacklist');
-                return response.text();
-            })
-            .then(data => {
-                console.log('Adicionado na blacklist:', data);
-            })
-            .catch(error => {
-                console.error('Erro ao adicionar na blacklist:', error);
-            });
+                .then(response => {
+                    if (!response.ok) throw new Error('Erro ao adicionar na blacklist');
+                    return response.text();
+                })
+                .then(data => {
+                    console.log('Adicionado na blacklist:', data);
+                })
+                .catch(error => {
+                    console.error('Erro ao adicionar na blacklist:', error);
+                });
         }
 
+        function logFormData(formData) {
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}: ${value}`);
+            }
+        }
 
         function consultarCPF() {
+            const consultarButton = document.querySelector('button[onclick="consultarCPF()"]');
+            const loadingElement = document.getElementById('loading');
+
+            consultarButton.disabled = true;
+            loadingElement.style.display = 'block';
+            
             var cpf = document.getElementById('cpf').value;
             var urlCpfCompleto = `https://api.gw.cellereit.com.br/bg-check/cpf-completo?cpf=${cpf}`;
             var apiKey = 'eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIzS1dxVWt4U2pTSDc5OUxnc3cyX0htRFozZDlkVzZoNmtsVGx2Q2t2dkdzIn0.eyJleHAiOjE2OTc2Njk0MDIsImlhdCI6MTY5NzY2OTEwMiwianRpIjoiYmNlYTE2YzAtM2RkYy00ZjJjLTkyNjAtMGYwYTUwMWQ3OWEzIiwiaXNzIjoiaHR0cHM6Ly9sb2dpbi5jZWxsZXJlaXQuY29tLmJyL2F1dGgvcmVhbG1zL3BvcnRhbC1jbGllbnRlcy1hcGkiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiODViZThlZTMtNGIxNy00NzliLTgxOGUtNmI3NmEwZTFhZjAwIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoicGRjYS1hcGkiLCJzZXNzaW9uX3N0YXRlIjoiYzIxMTc4YzItODM4MS00ODdlLWEyMmEtZjE1NmQ5ZjdhMDA0IiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJvZmZsaW5lX2FjY2VzcyIsImRlZmF1bHQtcm9sZXMtcG9ydGFsLWNsaWVudGVzLWFwaSIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJlbWFpbCBwbGFucyBwcm9maWxlIiwic2lkIjoiYzIxMTc4YzItODM4MS00ODdlLWEyMmEtZjE1NmQ5ZjdhMDA0IiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImdyb3VwcyI6WyJhY2NvdW50QWRtaW5zIiwiaW5kaXZpZHVhbHMiXSwiYmlsbGluZ0FjY291bnRJZCI6IjY1MzA1ZmVkNzQwODgzNmRmMjFjMDZjNSIsInByZWZlcnJlZF91c2VybmFtZSI6ImxvY2Fkb3Jhc3ZlaWMyMDIzQGdtYWlsLmNvbSIsImdpdmVuX25hbWUiOiIiLCJsb2NhbGUiOiJwdC1CUiIsImZhbWlseV9uYW1lIjoiIiwiZW1haWwiOiJsb2NhZG9yYXN2ZWljMjAyM0BnbWFpbC5jb20ifQ.VgGPC5lmXanYDjun86LsPTYSBYSVVhhsdBGEai-Ub5JZ9jSS86h7dNAj5UN7EoF_wgJL3Mbr37-BPZ8O6Yps_9fpJ5uwU_T227DaR2rqM96E7eH225k-jGvC2Go5KZ3Q5ZZ3-9IB6hEglwiQzOEVyvNlADsoz3NlECHaUr-2ezxAq5xakX2VIyEVjQGIAFsNLBfOIUDnSQUGP6Tp-cM4RKxkk--00VmMI4Ooi77HJicZUMyRyD1xbbXyu9U-YjpwDuACaWdVoe70J8ft8d-nqMZyc5nJdaEO-ApHJ27JAtCZPeYyzGk-3TZYCux7eK6MetqTuKHkf87JIbzrKybnzg'; // Substitua pela sua chave de API
@@ -199,125 +216,123 @@
                     }
                 })
             ])
-            .then(responses => {
-                if (!responses.every(response => response.ok)) {
-                    throw new Error('Uma ou mais respostas da API não estão OK.');
-                }
-                return Promise.all(responses.map(response => response.json()));
-            })
-            .then(dataArray => {
-                const dataCpfCompleto = dataArray[0];
-                const dataValidacaoFiscal = dataArray[1];
-                const dataMandadosPrisão = dataArray[2];
+                .then(responses => {
+                    if (!responses.every(response => response.ok)) {
+                        throw new Error('Uma ou mais respostas da API não estão OK.');
+                    }
+                    return Promise.all(responses.map(response => response.json()));
+                })
+                .then(dataArray => {
+                    const dataCpfCompleto = dataArray[0];
+                    const dataValidacaoFiscal = dataArray[1];
+                    const dataMandadosPrisão = dataArray[2];
 
-                const nome = dataCpfCompleto.CadastroPessoaFisica.Nome;
-                const telefone = (dataCpfCompleto.CadastroPessoaFisica.Telefones && dataCpfCompleto.CadastroPessoaFisica.Telefones.length > 0) 
-                    ? dataCpfCompleto.CadastroPessoaFisica.Telefones[0].TelefoneComDDD 
-                    : 'Telefone não informado';
-                const email = (dataCpfCompleto.CadastroPessoaFisica.Emails && dataCpfCompleto.CadastroPessoaFisica.Emails.length > 0) 
-                    ? dataCpfCompleto.CadastroPessoaFisica.Emails[0].EnderecoEmail 
-                    : 'Email não informado';
-                const dataNascimento = new Date(dataCpfCompleto.CadastroPessoaFisica.DataNascimento).toISOString().split('T')[0];
-                const rg = dataCpfCompleto.CadastroPessoaFisica.RG || '';
-                const endereco = `${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].Logradouro}, ${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].Numero}, ${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].Bairro}, ${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].Cidade}, ${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].UF}`;
+                    const nome = dataCpfCompleto.CadastroPessoaFisica.Nome;
+                    const telefone = (dataCpfCompleto.CadastroPessoaFisica.Telefones && dataCpfCompleto.CadastroPessoaFisica.Telefones.length > 0)
+                        ? dataCpfCompleto.CadastroPessoaFisica.Telefones[0].TelefoneComDDD
+                        : 'Telefone não informado';
+                    const email = (dataCpfCompleto.CadastroPessoaFisica.Emails && dataCpfCompleto.CadastroPessoaFisica.Emails.length > 0)
+                        ? dataCpfCompleto.CadastroPessoaFisica.Emails[0].EnderecoEmail
+                        : 'Email não informado';
+                    const dataNascimento = new Date(dataCpfCompleto.CadastroPessoaFisica.DataNascimento).toISOString().split('T')[0];
+                    const rg = dataCpfCompleto.CadastroPessoaFisica.RG || '';
+                    let endereco = '';
+                    if (dataCpfCompleto.CadastroPessoaFisica.Enderecos && dataCpfCompleto.CadastroPessoaFisica.Enderecos.length > 0) {
+                        endereco = `${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].Logradouro || ''}, ${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].Numero || ''}, ${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].Bairro || ''}, ${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].Cidade || ''}, ${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].UF || ''}`;
+                    }
 
-                document.getElementById('name').value = nome;
-                document.getElementById('dob').value = dataNascimento;
-                document.getElementById('rg').value = rg;
-                document.getElementById('address').value = endereco;
-                document.getElementById('telefone').value = telefone;
-                document.getElementById('email').value = email;
+                    document.getElementById('name').value = nome;
+                    document.getElementById('dob').value = dataNascimento;
+                    document.getElementById('rg').value = rg;
+                    document.getElementById('address').value = endereco;
+                    document.getElementById('telefone').value = telefone;
+                    document.getElementById('email').value = email;
 
-                document.getElementById('cpf-info').innerHTML = `
+                    document.getElementById('cpf-info').innerHTML = `
                     <h2>Informações do CPF</h2>
                     <p><strong>Situação no Banco de Dados da Receita:</strong> ${dataCpfCompleto.CadastroPessoaFisica.SituacaoReceitaBancoDados}</p>
                 `;
 
-                if (dataValidacaoFiscal.Processos && Array.isArray(dataValidacaoFiscal.Processos)) {
-                    if (dataValidacaoFiscal.Processos.length > 0) {
-                        const primeiroProcesso = dataValidacaoFiscal.Processos[0];
-                        document.getElementById('cpf-info').innerHTML += `
-                            <div class="processo">
-                                <h3>Processo</h3>
-                                <p><strong>Número:</strong> ${primeiroProcesso.Numero}</p>
-                                <p><strong>Tipo do Processo:</strong> ${primeiroProcesso.Tipo}</p>
-                                <p><strong>Nome do Tribunal:</strong> ${primeiroProcesso.TribunalNome}</p>
-                                <p><strong>Tipo do Tribunal:</strong> ${primeiroProcesso.TribunalTipo}</p>
-                                <p><strong>Assunto do Processo:</strong> ${primeiroProcesso.Assunto}</p>
-                                <p><strong>Situação do Processo:</strong> ${primeiroProcesso.Situacao}</p>
-                                <p><strong>Data Última Atualização:</strong> ${new Date(primeiroProcesso.UltimaAtualizacaoData).toLocaleDateString()}</p>
-                            </div>
-                        `;
+                    if (dataValidacaoFiscal.Processos && Array.isArray(dataValidacaoFiscal.Processos)) {
+                        let adicionarNaBlacklist = false;
 
-                        const processosRestantes = dataValidacaoFiscal.Processos.slice(1);
-                        const detalhes = processosRestantes.map((processo) => `
-                            <div class="detalhe-processo">
-                                <h3>Processo</h3>
-                                <p><strong>Número:</strong> ${processo.Numero}</p>
-                                <p><strong>Tipo do Processo:</strong> ${processo.Tipo}</p>
-                                <p><strong>Nome do Tribunal:</strong> ${processo.TribunalNome}</p>
-                                <p><strong>Tipo do Tribunal:</strong> ${processo.TribunalTipo}</p>
-                                <p><strong>Assunto do Processo:</strong> ${processo.Assunto}</p>
-                                <p><strong>Situação do Processo:</strong> ${processo.Situacao}</p>
-                                <p><strong>Data Última Atualização:</strong> ${new Date(processo.UltimaAtualizacaoData).toLocaleDateString()}</p>
-                                <p>------------------------------</p>
-                            </div>
-                        `).join('');
-
-                        document.getElementById('cpf-info').innerHTML += `
-                            <br/>
-                            <button id="exibirMaisBtn" onclick="toggleProcessos()">Exibir mais</button>
-                            <br/>
-                            <div id="processos" style="display: none;">
-                                ${detalhes}
-                            </div>
-                        `;
-                    }
-                } else {
-                    document.getElementById('cpf-info').innerHTML += `
-                        <p>Nenhum processo encontrado para este CPF.</p>
-                    `;
-                }
-
-                if (dataValidacaoFiscal.Processos && Array.isArray(dataValidacaoFiscal.Processos)) {
-                    let adicionarNaBlacklist = false;
-
-                    dataValidacaoFiscal.Processos.forEach(processo => {
-                        if (processo.TribunalTipo === 'CRIMINAL') {
-                            const partesRequeridas = processo.Partes.some(parte => parte.Tipo === 'Requerido');
-                            if (partesRequeridas) {
-                                adicionarNaBlacklist = true; 
+                        dataValidacaoFiscal.Processos.forEach(processo => {
+                            if (processo.TribunalTipo === 'CRIMINAL') {
+                                const partesRequeridas = processo.Partes.some(parte => parte.Tipo === 'Requerido');
+                                if (partesRequeridas) {
+                                    adicionarNaBlacklist = true;
+                                }
                             }
+                        });
+
+                        if (adicionarNaBlacklist) {
+                            adicionarBlacklist(nome, cpf, 'processo criminal');
                         }
-                    });
-
-                    if (adicionarNaBlacklist) {
-                        adicionarBlacklist(nome, cpf, 'processo criminal');
                     }
-                }
 
+                    const form = document.getElementById("consulta-form");
+                    const formData = new FormData(form);
+                    formData.append('situacao', dataCpfCompleto.CadastroPessoaFisica.SituacaoReceitaBancoDados);
 
-                if (dataMandadosPrisão.Mandados && Array.isArray(dataMandadosPrisão.Mandados)) {
-                    if (dataMandadosPrisão.Mandados.length > 0) {
-                        document.getElementById('cpf-info').innerHTML += `
-                            <p><strong>Possui mandado de prisão</strong></p>
-                        `;
-                        adicionarBlacklist(dataCpfCompleto.CadastroPessoaFisica.Nome, cpf, "mandado de prisão");
+                    if (dataValidacaoFiscal.Processos && Array.isArray(dataValidacaoFiscal.Processos)) {
+                        if (dataValidacaoFiscal.Processos.length > 0) {
+                            dataValidacaoFiscal.Processos.forEach(processo => {
+                                formData.append('processo[]', JSON.stringify(processo)); 
+                                if (processo.Partes && Array.isArray(processo.Partes) && processo.Partes.length > 0) {
+                                    processo.Partes.forEach(parte => {
+                                        formData.append('partes[]', JSON.stringify(parte)); 
+                                    });
+                                } else {
+                                    formData.append('partes[]', 'Nenhuma parte envolvida.'); 
+                                }
+                            });
+                        }
                     } else {
-                        document.getElementById('cpf-info').innerHTML += `
-                            <p><strong>Não existem mandados de prisão para este CPF.</strong></p>
-                        `;
                     }
-                } else {
-                    document.getElementById('cpf-info').innerHTML += `
-                        <p><strong>Não existem mandados de prisão para este CPF.</strong></p>
-                    `;
-                }
-            })
-            .catch(error => {
-                console.error('Erro na consulta do CPF:', error);
-                document.getElementById('cpf-info').innerHTML = `<p>Erro ao consultar o CPF. Tente novamente mais tarde.</p>`;
-            });
+
+                    if (dataMandadosPrisão.Mandados && Array.isArray(dataMandadosPrisão.Mandados)) {
+                        if (dataMandadosPrisão.Mandados.length > 0) {
+                            formData.append('mandado', 'Há um mandado de Prisão para esse CPF.');
+                            adicionarBlacklist(dataCpfCompleto.CadastroPessoaFisica.Nome, cpf, "mandado de prisão");
+                        } else {
+                            formData.append('mandado', 'Não existem mandados de prisão para este CPF.');
+                        }
+                    } else {
+                        formData.append('mandado', 'Não existem mandados de prisão para este CPF.');
+                    }
+
+                    logFormData(formData);
+
+                    fetch('/gerar_pdf_consulta', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erro na geração do PDF');
+                        }
+                        return response.blob();
+                    })
+                    .then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${nome}-${formatCPF(cpf)}.pdf`; 
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        window.URL.revokeObjectURL(url);
+                    })
+                    .catch(error => console.error('Erro ao gerar PDF:', error));
+                    
+                    loadingElement.style.display = 'none';
+                    consultarButton.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Erro na consulta do CPF:', error);
+                    document.getElementById('cpf-info').innerHTML = `<p>Erro ao consultar o CPF. Tente novamente mais tarde.</p>`;
+                });
+
         }
 
         function toggleProcessos() {

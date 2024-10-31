@@ -14,7 +14,7 @@
             flex-direction: column;
             height: 100vh;
             padding: 10px;
-            background-color: #9500ff;
+            background-color: rgb(0, 5, 125);
             border-right: 1px solid #dee2e6;
         }
 
@@ -58,14 +58,25 @@
             font-size: 16px;
             color: #333;
         }
+
+        #btn-consultar {
+            border: none;
+            background-color: rgb(0, 5, 125);
+            color: #fff;
+            padding: 1rem 0;
+            border-radius: 1rem;
+            cursor: pointer;
+            font-size: large;
+            font-weight: 600;
+        }
     </style>
 </head>
 
 <body>
     <div id="sidebar" class="expand">
-        <div class="sidebar-logo">
+        <!-- <div class="sidebar-logo">
             <a href="#"><img src="" alt="Logo"></a>
-        </div>
+        </div> -->
         <div class="sidebar-nav">
             <a class="sidebar-link" href="{{ url_for('index') }}">Pesquisar</a>
             <a class="sidebar-link" href="{{ url_for('blacklist') }}">Black List</a>
@@ -89,16 +100,18 @@
                     <label for="name">Nome Completo:</label><br>
                     <input type="text" id="name" name="name" required><br><br>
 
-                    <label for="dob">Data de Nascimento:</label><br>
-                    <input type="date" id="dob" name="dob" required><br><br>
-
                     <label for="cpf">CPF:</label><br>
                     <input type="text" id="cpf" name="cpf" required><br>
-                    <button type="button" onclick="consultarCPF()">Consultar</button><br><br>
-                    <div id="loading" style="display: none;">Carregando...</div>
 
+                    <br />
+                    <button type="button" id="btn-consultar" onclick="consultarCPF()">Consultar</button><br><br>
+                    <div id="loading" style="display: none; font-size: large; font-weight: 600;">Carregando...</div>
+                    
                     <div id="cpf-info"></div>
                     <br />
+
+                    <label for="dob">Data de Nascimento:</label><br>
+                    <input type="date" id="dob" name="dob"><br><br>
 
                     <label for="telefone">Telefone:</label><br>
                     <input type="text" id="telefone" name="telefone"><br><br>
@@ -110,7 +123,8 @@
                     <input type="text" id="rg" name="rg"><br><br>
 
                     <label for="address">Endereço:</label><br>
-                    <textarea id="address" name="address" rows="1" style="width: calc(100% - 22px); overflow-y: hidden;"
+                    <textarea id="address" name="address" rows="1"
+                        style="width: calc(100% - 22px); overflow-y: hidden; padding: 10px; border: 1px solid #dddddd; border-radius: 5px;"
                         oninput="adjustHeight(this)" required></textarea><br><br>
 
                     <script>
@@ -119,7 +133,6 @@
                             element.style.height = (element.scrollHeight) + "px";
                         }
                     </script>
-
 
                     <!-- <button type="submit" class="btn-presenca">Gerar PDF</button> -->
                 </form>
@@ -185,168 +198,182 @@
 
             consultarButton.disabled = true;
             loadingElement.style.display = 'block';
-            
-            var cpf = document.getElementById('cpf').value;
-            var urlCpfCompleto = `https://api.gw.cellereit.com.br/bg-check/cpf-completo?cpf=${cpf}`;
-            var apiKey = 'eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIzS1dxVWt4U2pTSDc5OUxnc3cyX0htRFozZDlkVzZoNmtsVGx2Q2t2dkdzIn0.eyJleHAiOjE2OTc2Njk0MDIsImlhdCI6MTY5NzY2OTEwMiwianRpIjoiYmNlYTE2YzAtM2RkYy00ZjJjLTkyNjAtMGYwYTUwMWQ3OWEzIiwiaXNzIjoiaHR0cHM6Ly9sb2dpbi5jZWxsZXJlaXQuY29tLmJyL2F1dGgvcmVhbG1zL3BvcnRhbC1jbGllbnRlcy1hcGkiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiODViZThlZTMtNGIxNy00NzliLTgxOGUtNmI3NmEwZTFhZjAwIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoicGRjYS1hcGkiLCJzZXNzaW9uX3N0YXRlIjoiYzIxMTc4YzItODM4MS00ODdlLWEyMmEtZjE1NmQ5ZjdhMDA0IiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJvZmZsaW5lX2FjY2VzcyIsImRlZmF1bHQtcm9sZXMtcG9ydGFsLWNsaWVudGVzLWFwaSIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJlbWFpbCBwbGFucyBwcm9maWxlIiwic2lkIjoiYzIxMTc4YzItODM4MS00ODdlLWEyMmEtZjE1NmQ5ZjdhMDA0IiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImdyb3VwcyI6WyJhY2NvdW50QWRtaW5zIiwiaW5kaXZpZHVhbHMiXSwiYmlsbGluZ0FjY291bnRJZCI6IjY1MzA1ZmVkNzQwODgzNmRmMjFjMDZjNSIsInByZWZlcnJlZF91c2VybmFtZSI6ImxvY2Fkb3Jhc3ZlaWMyMDIzQGdtYWlsLmNvbSIsImdpdmVuX25hbWUiOiIiLCJsb2NhbGUiOiJwdC1CUiIsImZhbWlseV9uYW1lIjoiIiwiZW1haWwiOiJsb2NhZG9yYXN2ZWljMjAyM0BnbWFpbC5jb20ifQ.VgGPC5lmXanYDjun86LsPTYSBYSVVhhsdBGEai-Ub5JZ9jSS86h7dNAj5UN7EoF_wgJL3Mbr37-BPZ8O6Yps_9fpJ5uwU_T227DaR2rqM96E7eH225k-jGvC2Go5KZ3Q5ZZ3-9IB6hEglwiQzOEVyvNlADsoz3NlECHaUr-2ezxAq5xakX2VIyEVjQGIAFsNLBfOIUDnSQUGP6Tp-cM4RKxkk--00VmMI4Ooi77HJicZUMyRyD1xbbXyu9U-YjpwDuACaWdVoe70J8ft8d-nqMZyc5nJdaEO-ApHJ27JAtCZPeYyzGk-3TZYCux7eK6MetqTuKHkf87JIbzrKybnzg'; // Substitua pela sua chave de API
+            loadingElement.style.marginBottom = '3rem';
 
-            var urlValidacaoFiscal = `https://api.gw.cellereit.com.br/consultas/validacao-fiscal-pj?cpf=${cpf}`;
-            var urlMandadosPrisão = `https://api.gw.cellereit.com.br/consultas/br/cnj/mandados-prisao?cpf=${cpf}`;
+            var cpf = formatCPF(document.getElementById('cpf').value);
 
-            Promise.all([
-                fetch(urlCpfCompleto, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${apiKey}`
-                    }
-                }),
-                fetch(urlValidacaoFiscal, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${apiKey}`
-                    }
-                }),
-                fetch(urlMandadosPrisão, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${apiKey}`
-                    }
-                })
-            ])
-                .then(responses => {
-                    if (!responses.every(response => response.ok)) {
-                        throw new Error('Uma ou mais respostas da API não estão OK.');
-                    }
-                    return Promise.all(responses.map(response => response.json()));
-                })
-                .then(dataArray => {
-                    const dataCpfCompleto = dataArray[0];
-                    const dataValidacaoFiscal = dataArray[1];
-                    const dataMandadosPrisão = dataArray[2];
+            fetch('/blacklist', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({ cpf })
+            })
+                .then(response => response.text())
+                .then(responseText => {
+                    if (responseText.includes("CPF não encontrado na Black List.")) {
 
-                    const nome = dataCpfCompleto.CadastroPessoaFisica.Nome;
-                    const telefone = (dataCpfCompleto.CadastroPessoaFisica.Telefones && dataCpfCompleto.CadastroPessoaFisica.Telefones.length > 0)
-                        ? dataCpfCompleto.CadastroPessoaFisica.Telefones[0].TelefoneComDDD
-                        : 'Telefone não informado';
-                    const email = (dataCpfCompleto.CadastroPessoaFisica.Emails && dataCpfCompleto.CadastroPessoaFisica.Emails.length > 0)
-                        ? dataCpfCompleto.CadastroPessoaFisica.Emails[0].EnderecoEmail
-                        : 'Email não informado';
-                    const dataNascimento = new Date(dataCpfCompleto.CadastroPessoaFisica.DataNascimento).toISOString().split('T')[0];
-                    const rg = dataCpfCompleto.CadastroPessoaFisica.RG || '';
-                    let endereco = '';
-                    if (dataCpfCompleto.CadastroPessoaFisica.Enderecos && dataCpfCompleto.CadastroPessoaFisica.Enderecos.length > 0) {
-                        endereco = `${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].Logradouro || ''}, ${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].Numero || ''}, ${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].Bairro || ''}, ${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].Cidade || ''}, ${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].UF || ''}`;
-                    }
+                        var urlCpfCompleto = `https://api.gw.cellereit.com.br/bg-check/cpf-completo?cpf=${cpf}`;
+                        var apiKey = 'eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIzS1dxVWt4U2pTSDc5OUxnc3cyX0htRFozZDlkVzZoNmtsVGx2Q2t2dkdzIn0.eyJleHAiOjE2OTc2Njk0MDIsImlhdCI6MTY5NzY2OTEwMiwianRpIjoiYmNlYTE2YzAtM2RkYy00ZjJjLTkyNjAtMGYwYTUwMWQ3OWEzIiwiaXNzIjoiaHR0cHM6Ly9sb2dpbi5jZWxsZXJlaXQuY29tLmJyL2F1dGgvcmVhbG1zL3BvcnRhbC1jbGllbnRlcy1hcGkiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiODViZThlZTMtNGIxNy00NzliLTgxOGUtNmI3NmEwZTFhZjAwIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoicGRjYS1hcGkiLCJzZXNzaW9uX3N0YXRlIjoiYzIxMTc4YzItODM4MS00ODdlLWEyMmEtZjE1NmQ5ZjdhMDA0IiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJvZmZsaW5lX2FjY2VzcyIsImRlZmF1bHQtcm9sZXMtcG9ydGFsLWNsaWVudGVzLWFwaSIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJlbWFpbCBwbGFucyBwcm9maWxlIiwic2lkIjoiYzIxMTc4YzItODM4MS00ODdlLWEyMmEtZjE1NmQ5ZjdhMDA0IiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImdyb3VwcyI6WyJhY2NvdW50QWRtaW5zIiwiaW5kaXZpZHVhbHMiXSwiYmlsbGluZ0FjY291bnRJZCI6IjY1MzA1ZmVkNzQwODgzNmRmMjFjMDZjNSIsInByZWZlcnJlZF91c2VybmFtZSI6ImxvY2Fkb3Jhc3ZlaWMyMDIzQGdtYWlsLmNvbSIsImdpdmVuX25hbWUiOiIiLCJsb2NhbGUiOiJwdC1CUiIsImZhbWlseV9uYW1lIjoiIiwiZW1haWwiOiJsb2NhZG9yYXN2ZWljMjAyM0BnbWFpbC5jb20ifQ.VgGPC5lmXanYDjun86LsPTYSBYSVVhhsdBGEai-Ub5JZ9jSS86h7dNAj5UN7EoF_wgJL3Mbr37-BPZ8O6Yps_9fpJ5uwU_T227DaR2rqM96E7eH225k-jGvC2Go5KZ3Q5ZZ3-9IB6hEglwiQzOEVyvNlADsoz3NlECHaUr-2ezxAq5xakX2VIyEVjQGIAFsNLBfOIUDnSQUGP6Tp-cM4RKxkk--00VmMI4Ooi77HJicZUMyRyD1xbbXyu9U-YjpwDuACaWdVoe70J8ft8d-nqMZyc5nJdaEO-ApHJ27JAtCZPeYyzGk-3TZYCux7eK6MetqTuKHkf87JIbzrKybnzg'; // Substitua pela sua chave de API
+                        var urlValidacaoFiscal = `https://api.gw.cellereit.com.br/consultas/validacao-fiscal-pj?cpf=${cpf}`;
+                        var urlMandadosPrisão = `https://api.gw.cellereit.com.br/consultas/br/cnj/mandados-prisao?cpf=${cpf}`;
 
-                    document.getElementById('name').value = nome;
-                    document.getElementById('dob').value = dataNascimento;
-                    document.getElementById('rg').value = rg;
-                    document.getElementById('address').value = endereco;
-                    document.getElementById('telefone').value = telefone;
-                    document.getElementById('email').value = email;
+                        Promise.all([
+                            fetch(urlCpfCompleto, {
+                                method: 'GET',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${apiKey}`
+                                }
+                            }),
+                            fetch(urlValidacaoFiscal, {
+                                method: 'GET',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${apiKey}`
+                                }
+                            }),
+                            fetch(urlMandadosPrisão, {
+                                method: 'GET',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${apiKey}`
+                                }
+                            })
+                        ])
+                            .then(responses => {
+                                if (!responses.every(response => response.ok)) {
+                                    throw new Error('Uma ou mais respostas da API não estão OK.');
+                                }
+                                return Promise.all(responses.map(response => response.json()));
+                            })
+                            .then(dataArray => {
+                                const dataCpfCompleto = dataArray[0];
+                                const dataValidacaoFiscal = dataArray[1];
+                                const dataMandadosPrisão = dataArray[2];
 
-                    document.getElementById('cpf-info').innerHTML = `
+                                const nome = dataCpfCompleto.CadastroPessoaFisica.Nome;
+                                const telefone = (dataCpfCompleto.CadastroPessoaFisica.Telefones && dataCpfCompleto.CadastroPessoaFisica.Telefones.length > 0)
+                                    ? dataCpfCompleto.CadastroPessoaFisica.Telefones[0].TelefoneComDDD
+                                    : 'Telefone não informado';
+                                const email = (dataCpfCompleto.CadastroPessoaFisica.Emails && dataCpfCompleto.CadastroPessoaFisica.Emails.length > 0)
+                                    ? dataCpfCompleto.CadastroPessoaFisica.Emails[0].EnderecoEmail
+                                    : 'Email não informado';
+                                const dataNascimento = new Date(dataCpfCompleto.CadastroPessoaFisica.DataNascimento).toISOString().split('T')[0];
+                                const rg = dataCpfCompleto.CadastroPessoaFisica.RG || '';
+                                let endereco = '';
+                                if (dataCpfCompleto.CadastroPessoaFisica.Enderecos && dataCpfCompleto.CadastroPessoaFisica.Enderecos.length > 0) {
+                                    endereco = `${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].Logradouro || ''}, ${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].Numero || ''}, ${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].Bairro || ''}, ${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].Cidade || ''}, ${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].UF || ''}`;
+                                }
+
+                                document.getElementById('name').value = nome;
+                                document.getElementById('dob').value = dataNascimento;
+                                document.getElementById('rg').value = rg;
+                                document.getElementById('address').value = endereco;
+                                document.getElementById('telefone').value = telefone;
+                                document.getElementById('email').value = email;
+
+                                document.getElementById('cpf-info').innerHTML = `
                     <h2>Informações do CPF</h2>
                     <p><strong>Situação no Banco de Dados da Receita:</strong> ${dataCpfCompleto.CadastroPessoaFisica.SituacaoReceitaBancoDados}</p>
                 `;
 
-                    if (dataValidacaoFiscal.Processos && Array.isArray(dataValidacaoFiscal.Processos)) {
-                        let adicionarNaBlacklist = false;
+                                if (dataValidacaoFiscal.Processos && Array.isArray(dataValidacaoFiscal.Processos)) {
+                                    let adicionarNaBlacklist = false;
 
-                        dataValidacaoFiscal.Processos.forEach(processo => {
-                            if (processo.TribunalTipo === 'CRIMINAL') {
-                                const partesRequeridas = processo.Partes.some(parte => parte.Tipo === 'Requerido');
-                                if (partesRequeridas) {
-                                    adicionarNaBlacklist = true;
-                                }
-                            }
-                        });
-
-                        if (adicionarNaBlacklist) {
-                            adicionarBlacklist(nome, cpf, 'processo criminal');
-                        }
-                    }
-
-                    const form = document.getElementById("consulta-form");
-                    const formData = new FormData(form);
-                    formData.append('situacao', dataCpfCompleto.CadastroPessoaFisica.SituacaoReceitaBancoDados);
-
-                    if (dataValidacaoFiscal.Processos && Array.isArray(dataValidacaoFiscal.Processos)) {
-                        if (dataValidacaoFiscal.Processos.length > 0) {
-                            dataValidacaoFiscal.Processos.forEach(processo => {
-                                formData.append('processo[]', JSON.stringify(processo)); 
-                                if (processo.Partes && Array.isArray(processo.Partes) && processo.Partes.length > 0) {
-                                    processo.Partes.forEach(parte => {
-                                        formData.append('partes[]', JSON.stringify(parte)); 
+                                    dataValidacaoFiscal.Processos.forEach(processo => {
+                                        if (processo.TribunalTipo === 'CRIMINAL') {
+                                            const partesRequeridas = processo.Partes.some(parte => parte.Tipo === 'Requerido');
+                                            if (partesRequeridas) {
+                                                adicionarNaBlacklist = true;
+                                            }
+                                        }
                                     });
-                                } else {
-                                    formData.append('partes[]', 'Nenhuma parte envolvida.'); 
+
+                                    if (adicionarNaBlacklist) {
+                                        adicionarBlacklist(nome, cpf, 'RESPONDE PROCESSO CRIMINAL');
+                                    }
                                 }
+
+                                const form = document.getElementById("consulta-form");
+                                const formData = new FormData(form);
+                                formData.append('situacao', dataCpfCompleto.CadastroPessoaFisica.SituacaoReceitaBancoDados);
+
+                                if (dataValidacaoFiscal.Processos && Array.isArray(dataValidacaoFiscal.Processos)) {
+                                    if (dataValidacaoFiscal.Processos.length > 0) {
+                                        dataValidacaoFiscal.Processos.forEach(processo => {
+                                            formData.append('processo[]', JSON.stringify(processo));
+                                            if (processo.Partes && Array.isArray(processo.Partes) && processo.Partes.length > 0) {
+                                                processo.Partes.forEach(parte => {
+                                                    formData.append('partes[]', JSON.stringify(parte));
+                                                });
+                                            } else {
+                                                formData.append('partes[]', 'Nenhuma parte envolvida.');
+                                            }
+                                        });
+                                    }
+                                } else {
+                                }
+
+                                if (dataMandadosPrisão.Mandados && Array.isArray(dataMandadosPrisão.Mandados)) {
+                                    if (dataMandadosPrisão.Mandados.length > 0) {
+                                        formData.append('mandado', 'Há um mandado de Prisão para esse CPF.');
+                                        adicionarBlacklist(dataCpfCompleto.CadastroPessoaFisica.Nome, cpf, "mandado de prisão");
+                                    } else {
+                                        formData.append('mandado', 'Não existem mandados de prisão para este CPF.');
+                                    }
+                                } else {
+                                    formData.append('mandado', 'Não existem mandados de prisão para este CPF.');
+                                }
+
+                                logFormData(formData);
+
+                                fetch('/gerar_pdf_consulta', {
+                                    method: 'POST',
+                                    body: formData
+                                })
+                                    .then(response => {
+                                        if (!response.ok) {
+                                            throw new Error('Erro na geração do PDF');
+                                        }
+                                        return response.blob();
+                                    })
+                                    .then(blob => {
+                                        const url = window.URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = `${nome}-${formatCPF(cpf)}.pdf`;
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        a.remove();
+                                        window.URL.revokeObjectURL(url);
+                                    })
+                                    .catch(error => console.error('Erro ao gerar PDF:', error));
+
+                                loadingElement.style.display = 'none';
+                                consultarButton.disabled = false;
+                            })
+                            .catch(error => {
+                                console.error('Erro na consulta do CPF:', error);
+                                document.getElementById('cpf-info').innerHTML = `<p>Erro ao consultar o CPF. Tente novamente mais tarde.</p>`;
+                            })
+                            .finally(() => {
+                                loadingElement.style.display = 'none';
+                                consultarButton.disabled = false;
                             });
-                        }
                     } else {
+                        window.alert('CPF digitado ja existe na Black List.');
+                        loadingElement.style.display = 'none';
+                        consultarButton.disabled = false;
                     }
-
-                    if (dataMandadosPrisão.Mandados && Array.isArray(dataMandadosPrisão.Mandados)) {
-                        if (dataMandadosPrisão.Mandados.length > 0) {
-                            formData.append('mandado', 'Há um mandado de Prisão para esse CPF.');
-                            adicionarBlacklist(dataCpfCompleto.CadastroPessoaFisica.Nome, cpf, "mandado de prisão");
-                        } else {
-                            formData.append('mandado', 'Não existem mandados de prisão para este CPF.');
-                        }
-                    } else {
-                        formData.append('mandado', 'Não existem mandados de prisão para este CPF.');
-                    }
-
-                    logFormData(formData);
-
-                    fetch('/gerar_pdf_consulta', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Erro na geração do PDF');
-                        }
-                        return response.blob();
-                    })
-                    .then(blob => {
-                        const url = window.URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `${nome}-${formatCPF(cpf)}.pdf`; 
-                        document.body.appendChild(a);
-                        a.click();
-                        a.remove();
-                        window.URL.revokeObjectURL(url);
-                    })
-                    .catch(error => console.error('Erro ao gerar PDF:', error));
-                    
-                    loadingElement.style.display = 'none';
-                    consultarButton.disabled = false;
                 })
                 .catch(error => {
-                    console.error('Erro na consulta do CPF:', error);
-                    document.getElementById('cpf-info').innerHTML = `<p>Erro ao consultar o CPF. Tente novamente mais tarde.</p>`;
+                    console.error('Erro ao verificar a Black List:', error);
+                    loadingElement.style.display = 'none';
+                    consultarButton.disabled = false;
                 });
-
         }
 
-        function toggleProcessos() {
-            const processosDiv = document.getElementById('processos');
-            const btn = document.getElementById('exibirMaisBtn');
-
-            if (processosDiv.style.display === 'none') {
-                processosDiv.style.display = 'block';
-                btn.innerText = 'Ocultar';
-            } else {
-                processosDiv.style.display = 'none';
-                btn.innerText = 'Exibir mais';
-            }
-        }
     </script>
 </body>
 

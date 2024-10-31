@@ -268,7 +268,7 @@ def generate_pdf_cpf():
         pdf.set_fill_color(0, 5, 125)
         pdf.set_text_color(255, 255, 255)
         pdf.set_font('Arial', 'B', 14)
-        pdf.cell(0, 10, 'MANDADOS DE PRISÃO :', 0, 1, 'C', 1)
+        pdf.cell(0, 10, 'MANDADOS DE PRISÃO', 0, 1, 'C', 1)
         pdf.cell(0, 10, '', 0, 1)
         pdf.set_text_color(0, 0, 0)
         pdf.cell(0, 10, f'{mandado}', 0, 1)
@@ -277,7 +277,7 @@ def generate_pdf_cpf():
         pdf.set_fill_color(0, 5, 125)
         pdf.set_text_color(255, 255, 255)
         pdf.set_font('Arial', 'B', 14)
-        pdf.cell(0, 10, 'PROCESSOS ENCONTRADOS :', 0, 1, 'C', 1)
+        pdf.cell(0, 10, 'ANÁLISE JUDICIAL', 0, 1, 'C', 1)
         pdf.set_text_color(0, 0, 0)
 
         pdf.set_font('Arial', '', 12)

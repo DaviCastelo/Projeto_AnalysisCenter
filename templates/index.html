@@ -252,19 +252,29 @@
                                 const dataValidacaoFiscal = dataArray[1];
                                 const dataMandadosPrisão = dataArray[2];
 
-                                const nome = dataCpfCompleto.CadastroPessoaFisica.Nome;
-                                const telefone = (dataCpfCompleto.CadastroPessoaFisica.Telefones && dataCpfCompleto.CadastroPessoaFisica.Telefones.length > 0)
-                                    ? dataCpfCompleto.CadastroPessoaFisica.Telefones[0].TelefoneComDDD
+                                const pessoaFisica = dataCpfCompleto.CadastroPessoaFisica || dataCpfCompleto.ReceitaFederalCpf;
+                                const nome = dataCpfCompleto.CadastroPessoaFisica?.Nome || dataCpfCompleto.ReceitaFederalCpf?.NomePessoaFisica;
+                                const telefone = (pessoaFisica.Telefones && pessoaFisica.Telefones.length > 0)
+                                    ? pessoaFisica.Telefones[0].TelefoneComDDD
                                     : 'Telefone não informado';
-                                const email = (dataCpfCompleto.CadastroPessoaFisica.Emails && dataCpfCompleto.CadastroPessoaFisica.Emails.length > 0)
-                                    ? dataCpfCompleto.CadastroPessoaFisica.Emails[0].EnderecoEmail
+
+                                const email = (pessoaFisica.Emails && pessoaFisica.Emails.length > 0)
+                                    ? pessoaFisica.Emails[0].EnderecoEmail
                                     : 'Email não informado';
-                                const dataNascimento = new Date(dataCpfCompleto.CadastroPessoaFisica.DataNascimento).toISOString().split('T')[0];
-                                const rg = dataCpfCompleto.CadastroPessoaFisica.RG || '';
+
+                                const dataNascimento = pessoaFisica.DataNascimento 
+                                    ? new Date(pessoaFisica.DataNascimento).toISOString().split('T')[0] 
+                                    : 'Data de nascimento não informada';
+
+                                const rg = pessoaFisica.RG || 'RG não informado';
+
                                 let endereco = '';
-                                if (dataCpfCompleto.CadastroPessoaFisica.Enderecos && dataCpfCompleto.CadastroPessoaFisica.Enderecos.length > 0) {
-                                    endereco = `${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].Logradouro || ''}, ${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].Numero || ''}, ${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].Bairro || ''}, ${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].Cidade || ''}, ${dataCpfCompleto.CadastroPessoaFisica.Enderecos[0].UF || ''}`;
+                                if (pessoaFisica.Enderecos && pessoaFisica.Enderecos.length > 0) {
+                                    endereco = `${pessoaFisica.Enderecos[0].Logradouro || ''}, ${pessoaFisica.Enderecos[0].Numero || ''}, ${pessoaFisica.Enderecos[0].Bairro || ''}, ${pessoaFisica.Enderecos[0].Cidade || ''}, ${pessoaFisica.Enderecos[0].UF || ''}`;
+                                } else {
+                                    endereco = 'Endereço não informado';
                                 }
+
 
                                 document.getElementById('name').value = nome;
                                 document.getElementById('dob').value = dataNascimento;
@@ -272,11 +282,7 @@
                                 document.getElementById('address').value = endereco;
                                 document.getElementById('telefone').value = telefone;
                                 document.getElementById('email').value = email;
-
-                                document.getElementById('cpf-info').innerHTML = `
-                    <h2>Informações do CPF</h2>
-                    <p><strong>Situação no Banco de Dados da Receita:</strong> ${dataCpfCompleto.CadastroPessoaFisica.SituacaoReceitaBancoDados}</p>
-                `;
+                                const situacaoReceitaBancoDados = dataCpfCompleto.CadastroPessoaFisica?.SituacaoReceitaBancoDados || dataCpfCompleto.ReceitaFederalCpf?.SituacaoReceitaBancoDados || 'Situação não informada';
 
                                 if (dataValidacaoFiscal.Processos && Array.isArray(dataValidacaoFiscal.Processos)) {
                                     let adicionarNaBlacklist = false;
@@ -297,7 +303,7 @@
 
                                 const form = document.getElementById("consulta-form");
                                 const formData = new FormData(form);
-                                formData.append('situacao', dataCpfCompleto.CadastroPessoaFisica.SituacaoReceitaBancoDados);
+                                formData.append('situacao', situacaoReceitaBancoDados);
 
                                 if (dataValidacaoFiscal.Processos && Array.isArray(dataValidacaoFiscal.Processos)) {
                                     if (dataValidacaoFiscal.Processos.length > 0) {

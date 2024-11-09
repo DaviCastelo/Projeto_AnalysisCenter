@@ -8,7 +8,7 @@ from functools import wraps
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = '1234'  # Substitua com uma chave secreta adequada
+app.secret_key = '1234'  
 
 def connect_to_database():
     try:
@@ -184,6 +184,14 @@ def delete_blacklist():
         flash('Erro ao conectar ao banco de dados')
         return redirect(url_for('blacklist'))
 
+@app.route('/add_blacklist_form', methods=['GET'])
+def add_blacklist_form():
+    return render_template('add_blacklist.html')
+
+@app.route('/delete_blacklist_form', methods=['GET'])
+def delete_blacklist_form():
+    return render_template('delete_blacklist.html')
+
 @app.route('/edit_blacklist', methods=['POST', 'GET'])
 # @login_required
 def edit_blacklist():
@@ -250,19 +258,80 @@ def generate_pdf_cpf():
         partes = request.form.getlist('partes[]')
 
         pdf = FPDF()
+
+        pdf.set_left_margin(0)
+        pdf.set_right_margin(0)
+        pdf.set_top_margin(0)
+
         pdf.add_page()
 
-        pdf.set_font('Arial', 'B', 16)
-        pdf.cell(0, 10, 'Resultado da consulta', 0, 1, 'C')
+        image_path = os.path.join(os.path.dirname(__file__), 'static', 'fotos', 'logo.png')
+        image_width = 30  
+        image_height = 30  
 
+        pdf.set_fill_color(0, 5, 125)
+        pdf.rect(0, 0, pdf.w, image_height + 5, 'F') 
+
+        pdf.image(image_path, x=5, y=5, w=image_width, h=image_height)
+
+        pdf.set_xy(0, 5)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_font('Arial', 'B', 26)
+        pdf.cell(pdf.w, image_height, 'RELATÓRIO', 0, 1, 'C')
+
+        pdf.set_left_margin(6)
+        pdf.set_right_margin(6)
+        pdf.cell(0, 5, '', 0, 1)
+        pdf.set_font('Arial', 'B', 12)
+        pdf.ln(5) 
+        pdf.set_text_color(0, 0, 0)
+        pdf.multi_cell(0, 10, 
+            "A Lei Geral de Proteção de Dados Pessoais - LGPD (Lei n. 13.709, de 2018) dispõe sobre a proteção de dados pessoais das pessoas. Portanto, o conteúdo deverá ser apenas para o seu conhecimento e declara ciência que todas as informações contidas no corpo da consulta são apenas para sua orientação."
+        )
+
+        pdf.ln()
+
+        current_datetime = datetime.now().strftime('%d/%m/%Y %H:%M')
+        pdf.cell(0, 10, current_datetime, 0, 1, 'R')  
+
+        pdf.set_fill_color(0, 5, 125)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_font('Arial', 'B', 14)
+        pdf.cell(0, 10, 'DADOS PESSOAIS', 0, 1, 'C', 1)
+        pdf.cell(0, 10, '', 0, 1)
+        pdf.set_text_color(0, 0, 0)
         pdf.set_font('Arial', '', 12)
-        pdf.cell(0, 10, f'Situação na Receita Federal: {situacao}', 0, 1, 'C')
-        pdf.cell(0, 10, f'Nome: {nome}', 0, 1)
-        pdf.cell(0, 10, f'CPF: {cpf}', 0, 1)
-        pdf.cell(0, 10, f'Telefone: {telefone}', 0, 1)
-        pdf.cell(0, 10, f'Email: {email}', 0, 1)
-        pdf.cell(0, 10, f'RG: {rg}', 0, 1)
-        pdf.multi_cell(0, 10, f'Endereço: {endereco}', 0, 1)
+        pdf.set_font('Arial', 'B', 12)  
+        pdf.cell(20, 10, 'Nome:', 0, 0)  
+        pdf.set_font('Arial', '', 12) 
+        pdf.cell(0, 10, nome, 0, 1)
+
+        pdf.set_font('Arial', 'B', 12)
+        pdf.cell(20, 10, 'CPF:', 0, 0)
+        pdf.set_font('Arial', '', 12)
+        pdf.cell(35, 10, f'{cpf}', 0, 0)
+        pdf.set_font('Arial', 'B', 12)
+        pdf.cell(0, 10, f'  {situacao}', 0, 1)  
+
+        pdf.set_font('Arial', 'B', 12)
+        pdf.cell(20, 10, 'Telefone:', 0, 0)
+        pdf.set_font('Arial', '', 12)
+        pdf.cell(0, 10, telefone, 0, 1)
+
+        pdf.set_font('Arial', 'B', 12)
+        pdf.cell(20, 10, 'Email:', 0, 0)
+        pdf.set_font('Arial', '', 12)
+        pdf.cell(0, 10, email, 0, 1)
+
+        pdf.set_font('Arial', 'B', 12)
+        pdf.cell(20, 10, 'RG:', 0, 0)
+        pdf.set_font('Arial', '', 12)
+        pdf.cell(0, 10, rg, 0, 1)
+
+        pdf.set_font('Arial', 'B', 12)
+        pdf.cell(20, 10, 'Endereço:', 0, 0)
+        pdf.set_font('Arial', '', 12)
+        pdf.multi_cell(0, 10, endereco, 0, 1)
         pdf.cell(0, 10, '', 0, 1)
 
         pdf.set_fill_color(0, 5, 125)
@@ -340,14 +409,14 @@ def generate_pdf_cpf():
             pdf.set_font('Arial', 'B', 14)
             pdf.cell(0, 10, 'Nenhum processo encontrado para este CPF', 0, 1)
 
-        response = make_response(pdf.output(dest='S').encode('latin1'))
+        response = make_response(pdf.output(dest='S').encode('latin-1'))
         response.headers['Content-Type'] = 'application/pdf'
         response.headers['Content-Disposition'] = f'attachment; filename={nome}-{cpf}.pdf'
 
         return response
 
     except Exception as e:
-        print(f"Erro ao gerar PDF: {e}")  # Log do erro
+        print(f"Erro ao gerar PDF: {e}")  
         return {"error": "Ocorreu um erro ao gerar o PDF."}, 500
 
 

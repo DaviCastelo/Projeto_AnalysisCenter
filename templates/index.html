@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        /* Estilos da Sidebar */
         #sidebar {
             display: flex;
             flex-direction: column;
@@ -38,7 +37,6 @@
             background-color: #c82333;
         }
 
-        /* Estilos do conteúdo principal */
         .main {
             padding: 20px;
             display: flex;
@@ -69,17 +67,29 @@
             font-size: large;
             font-weight: 600;
         }
+        
     </style>
 </head>
 
 <body>
     <div id="sidebar" class="expand">
-        <!-- <div class="sidebar-logo">
-            <a href="#"><img src="" alt="Logo"></a>
-        </div> -->
+        <div class="sidebar-logo">
+            <img src="{{ url_for('static', filename='fotos/logo.png') }}" alt="Logo">
+        </div>
         <div class="sidebar-nav">
-            <a class="sidebar-link" href="{{ url_for('index') }}">Pesquisar</a>
-            <a class="sidebar-link" href="{{ url_for('blacklist') }}">Black List</a>
+            <div class="sidebar-item">
+                <p class="sidebar-link" style="color: #fff;">Pesquisar</p>
+                <div class="submenu">
+                    <a class="submenu-link" href="{{ url_for('index') }}">CPF</a>
+                    <p class="submenu-link">VEÍCULO</p>
+                </div>
+                <p class="sidebar-link" style="color: #fff;">Black List</p>
+                <div class="submenu">
+                    <a class="submenu-link" href="{{ url_for('blacklist') }}">Consultar</a>
+                    <a class="submenu-link" href="{{ url_for('add_blacklist_form') }}">Adicionar</a>
+                    <a class="submenu-link" href="{{ url_for('delete_blacklist_form') }}">Excluir</a>
+                </div>
+            </div>
         </div>
         <div class="logout-container">
             <button class="logout-button" onclick="logout()">

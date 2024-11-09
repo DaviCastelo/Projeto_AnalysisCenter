@@ -60,10 +60,6 @@
         .logout-container {
             margin-top: auto; 
         }
-
-        p{
-            margin: 0!important;
-        }
     </style>
 </head>
 <body>
@@ -100,51 +96,12 @@
     <div class="main">
         <div class="wrapper">
             <div class="center-content">
-                <h1>Consulta de CPF na Black List</h1>
-                <form action="{{ url_for('blacklist') }}" method="post">
-                    <label for="cpf">Digite o CPF:</label><br>
-                    <input type="text" id="cpf" name="cpf" required><br><br>
-                    <button type="submit" class="btn-presenca">Consultar</button>
+                <h1>Excluir CPF da Black List</h1>
+                <form action="{{ url_for('delete_blacklist') }}" method="post">
+                    <label for="cpf_delete">Digite o CPF para excluir:</label><br>
+                    <input type="text" id="cpf_delete" name="cpf" required><br><br>
+                    <button type="submit" class="btn-presenca">Excluir</button>
                 </form>
-
-                <p> 
-                    {% if resultado %}
-                </p>
-                <div class="result">
-                    {% if negativado %}
-                        <p class="negativado">NEGATIVADO</p>
-                    {% endif %}
-                    <h2>Resultado da consulta:</h2>
-                    <p>Nome: {{ resultado.nome }}</p>
-                    <p>CPF: {{ resultado.cpf }}</p>
-                    <p>Motivo: {{ resultado.motivo }}</p>
-                    
-                    <form action="{{ url_for('generate_pdf') }}" method="post">
-                        <input type="hidden" name="nome" value="{{ resultado.nome }}">
-                        <input type="hidden" name="cpf" value="{{ resultado.cpf }}">
-                        <input type="hidden" name="motivo" value="{{ resultado.motivo }}">
-                        <button type="submit" class="btn-presenca">Compartilhar</button>
-                    </form>
-
-                    <form action="{{ url_for('edit_blacklist') }}" method="post">
-                        <input type="hidden" name="cpf" value="{{ resultado.cpf }}">
-                        <button type="submit" class="btn-presenca">Editar</button>
-                    </form>
-                </div>
-                {% elif mensagem %}
-                    <p>{{ mensagem }}</p>
-                {% endif %}
-                
-                {% with messages = get_flashed_messages() %}
-                    {% if messages %}
-                        <div class="flash-message">
-                            {% for message in messages %}
-                                <p>{{ message }}</p>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                {% endwith %}
-
             </div>
         </div>
     </div>

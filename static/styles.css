@@ -141,6 +141,31 @@ a.sidebar-link:hover {
     opacity: 1;
 }
 
+
+.submenu {
+    display: none;
+    flex-direction: column;
+    position: relative;
+    top: 100%;
+    left: 0;
+    padding: 5px;
+    z-index: 1;
+}
+
+.submenu-link {
+    padding: 5px 0 0 40px;
+    text-decoration: none;
+    color: #fff;
+}
+
+.submenu-link:hover {
+    border-left: 3px solid #9500ff;
+}
+
+.sidebar-item:hover .submenu {
+    display: flex;
+}
+
 #sidebar.expand .sidebar-link[data-bs-toggle="collapse"]::after {
     border: solid;
     border-width: 0 0.075rem 0.075rem 0;
@@ -296,8 +321,8 @@ body {
 }
 
 .sidebar-logo img {
-    width: 40px;
-    height: 40px;
+    width: 250px;
+    height: 250px;
     margin-right: 10px;
 }
 
@@ -322,7 +347,6 @@ body {
 }
 
 .sidebar-link:hover {
-    background-color: #495057;
     border-radius: 4px;
 }
 
@@ -359,7 +383,7 @@ body {
 }
 
 .sidebar-link:hover {
-    background-color: #f4f4f4;
+    border-left: 3px solid #9500ff;
 }
 
 .profile-info p {

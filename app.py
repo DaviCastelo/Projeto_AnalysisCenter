@@ -18,6 +18,7 @@ def connect_to_database():
             user='root',
             password='Filhotes3'
             # password='Filhotes3'
+            #teste
         )
         if connection.is_connected():
             print('Conexão ao MySQL bem-sucedida.')

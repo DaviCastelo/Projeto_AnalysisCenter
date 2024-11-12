@@ -8,9 +8,9 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: rgb(0, 5, 125); 
-            color: rgb(0, 0, 0); 
-            height: 100vh; 
+            background-color: rgb(0, 5, 125); /* Fundo azul */
+            color: rgb(0, 0, 0); /* Cor do texto */
+            height: 100vh; /* Definir altura mínima para ocupar a tela inteira */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -20,9 +20,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width:50%;
+            width: 100%;
             max-width: 1100px;
-            margin: 0 ;
+            margin: 0 auto;
         }
 
         .image-container, .form-container {
@@ -32,7 +32,7 @@
         }
 
         .page-image {
-            max-width: 100%; 
+            max-width: 100%; /* Imagem responsiva */
             height: auto;
         }
 
@@ -44,7 +44,7 @@
         }
 
         .btn-primary {
-            background-color: #9500ff; 
+            background-color: #9500ff; /* Cor do botão */
         }
     </style>
 </head>
@@ -86,11 +86,11 @@
             const passwordField = document.getElementById('senha');
 
             togglePassword.addEventListener('click', function () {
-                
+                // Toggle the type attribute
                 const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
                 passwordField.setAttribute('type', type);
 
-                // Teste
+                // Toggle the eye icon
                 this.classList.toggle('fa-eye-slash');
             });
         });

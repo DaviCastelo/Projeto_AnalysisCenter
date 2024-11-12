@@ -8,9 +8,9 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: rgb(0, 5, 125); /* Fundo azul */
-            color: rgb(0, 0, 0); /* Cor do texto */
-            height: 100vh; /* Altura mínima para ocupar a tela inteira */
+            background-color: rgb(0, 5, 125); 
+            color: rgb(0, 0, 0); 
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -22,7 +22,7 @@
             align-items: center;
             justify-content: center;
             width: 50%;
-            max-width: 500px; /* Define a largura máxima do container */
+            max-width: 500px; 
             padding: 20px;
         }
 
@@ -32,7 +32,7 @@
         }
 
         .page-image {
-            max-width: 50%; /* Garante que a imagem seja responsiva */
+            max-width: 50%; 
             height: auto;
         }
 
@@ -150,11 +150,11 @@
         const passwordField = document.getElementById('senha');
 
         togglePassword.addEventListener('click', function () {
-            // Toggle the type attribute
+            
             const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordField.setAttribute('type', type);
 
-            // Toggle the eye icon
+           
             this.classList.toggle('fa-eye-slash');
         });
 
@@ -163,13 +163,13 @@
 
         planContainers.forEach(container => {
             container.addEventListener('click', function() {
-                // Remove a classe 'selected' de todos os containers
+                
                 planContainers.forEach(c => c.classList.remove('selected'));
                 
-                // Adiciona a classe 'selected' ao container clicado
+               
                 this.classList.add('selected');
 
-                // Atualiza o valor do campo hidden 'plano' com o valor associado ao container selecionado
+                
                 planoInput.value = this.getAttribute('data-plano');
             });
         });

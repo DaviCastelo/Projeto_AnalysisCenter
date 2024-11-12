@@ -52,8 +52,8 @@ def register():
         cpf = request.form.get('cpf', '')
         senha = request.form.get('senha', '')
         nome = request.form.get('nome', '')
-        email = request.form.get('email', '')  # Armazenar o e-mail, mas não usar para login
-        plano_id = request.form.get('plano', '')  # Captura a escolha do plano
+        email = request.form.get('email', '')  
+        plano_id = request.form.get('plano', '')  
 
         hashed_password = generate_password_hash(senha)
 

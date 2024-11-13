@@ -51,24 +51,34 @@ def index():
 def register():
     if request.method == 'POST':
         cpf = request.form.get('cpf', '')
+        cnpj = request.form.get('cnpj', '')
+        endereco = request.form.get('endereco', '')
+        telefone = request.form.get('telefone', '')
+        empresa = request.form.get('empresa', '')
+        atividade = request.form.get('atividade', '')
         senha = request.form.get('senha', '')
         nome = request.form.get('nome', '')
         email = request.form.get('email', '')  
-        plano_id = request.form.get('plano', '')  
+        
+        # Ajuste para plano_id: atribuir None se estiver vazio
+        plano_id = request.form.get('plano') or None  
 
         hashed_password = generate_password_hash(senha)
 
         connection = connect_to_database()
         if connection:
             cursor = connection.cursor()
-            query = "INSERT INTO users (cpf, senha, nome, email, plano_id) VALUES (%s, %s, %s, %s, %s)"
+            query = """
+                INSERT INTO users (cpf, cnpj, endereco, telefone, empresa, atividade, senha, nome, email, plano_id) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
             try:
-                cursor.execute(query, (cpf, hashed_password, nome, email, plano_id))
+                cursor.execute(query, (cpf, cnpj, endereco, telefone, empresa, atividade, hashed_password, nome, email, plano_id))
                 connection.commit()
                 flash('Registro realizado com sucesso! Faça o login.')
                 return redirect(url_for('login'))
             except mysql.connector.IntegrityError:
-                flash('CPF já cadastrado. Tente outro.')
+                flash('CPF ou CNPJ já cadastrado. Tente outro.')
                 return redirect(url_for('register'))
             finally:
                 cursor.close()

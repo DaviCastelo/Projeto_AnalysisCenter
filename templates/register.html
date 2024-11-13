@@ -8,59 +8,44 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: rgb(0, 5, 125); 
-            color: rgb(0, 0, 0); 
+            background-color: rgb(0, 5, 125);
+            color: rgb(0, 0, 0);
             height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;/* teste */
+            align-items: center;
         }
 
         .container-custom {
+    width: 100%;
+    max-width: 900px;
+    padding: 10px; /* Diminuído para reduzir a altura */
+}
+
+.form-container {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px; /* Diminuído para reduzir a altura */
+    width: 100%;
+    max-height: 600px; /* Define uma altura máxima para limitar o tamanho */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    overflow-y: auto; /* Adiciona rolagem se o conteúdo exceder a altura máxima */
+}
+
+
+        .form-container h2 {
+            margin-bottom: 15px;
+        }
+
+        .row > .col-md-6 {
+            padding-right: 10px;
+            padding-left: 10px;
+        }
+
+        .password-container {
+            position: relative;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            width: 50%;
-            max-width: 500px; 
-            padding: 20px;
-        }
-
-        .image-container {
-            text-align: center;
-            margin-bottom: 100px;
-        }
-
-        .page-image {
-            max-width: 50%; 
-            height: auto;
-        }
-
-        .form-container {
-            background-color: white;
-            border-radius: 8px;
-            padding: 20px;
-            width: 100%;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .plan-container {
-            border: 2px solid #ddd;
-            padding: 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-bottom: 10px;
-        }
-
-        .plan-container.selected {
-            background-color: #9500ff;
-            color: white;
-            border-color: #9500ff;
-        }
-
-        .plan-container:hover {
-            background-color: #9500ff;
         }
 
         .eye-icon {
@@ -71,108 +56,168 @@
             cursor: pointer;
         }
 
-        .password-container {
-            position: relative;
-            display: flex;
-            align-items: center;
+        .btn-primary {
+            background-color: #9500ff;
+            border: none;
         }
 
-        .back-button {
+        .btn-back {
+            background-color: #f5f5f5;
+            border: 1px solid #ccc;
+            color: #333;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .btn-back:hover {
+            background-color: #e0e0e0;
+        }
+
+        /* Estilos para os planos */
+        .plan-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
             margin-top: 20px;
+        }
+
+        .plan-option {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .plan-option:hover {
+            background-color: #f8f8f8;
+            border-color: #aaa;
+        }
+
+        .plan-title {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        .plan-price {
+            font-size: 1em;
+            color: #666;
+        }
+
+        .selected {
+            border-color: #007bff;
+            background-color: #e0f0ff;
         }
     </style>
 </head>
 <body>
     <div class="container-custom">
-        <div class="image-container">
-            <img src="{{ url_for('static', filename='fotos/logo.png') }}" alt="Logo" class="page-image">
-        </div>
         <div class="form-container">
             <h2 class="text-center">Cadastro</h2>
             <form method="POST" action="{{ url_for('register') }}">
-                {% with messages = get_flashed_messages() %}
-                    {% if messages %}
-                        <div class="alert alert-warning">
-                            {{ messages[0] }}
-                        </div>
-                    {% endif %}
-                {% endwith %}
-                <div class="mb-3">
-                    <label for="nome" class="form-label">Nome</label>
-                    <input type="text" class="form-control" id="nome" name="nome" required>
-                </div>
-                <div class="mb-3">
-                    <label for="cpf" class="form-label">CPF</label>
-                    <input type="text" class="form-control" id="cpf" name="cpf" placeholder="Digite o CPF (opcional se CNPJ preenchido)">
-                </div>
-                <div class="mb-3">
-                    <label for="cnpj" class="form-label">CNPJ</label>
-                    <input type="text" class="form-control" id="cnpj" name="cnpj" placeholder="Digite o CNPJ (opcional se CPF preenchido)">
-                </div>
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" name="email" required>
-                </div>
-                <div class="mb-3 password-container">
-                    <label for="senha" class="form-label">Senha</label>
-                    <input type="password" class="form-control" id="senha" name="senha" required>
-                    <i class="fa-solid fa-eye eye-icon" id="togglePassword"></i>
-                </div>
-
-                <div class="mb-3">
-                    <label for="plano" class="form-label">Plano</label>
-                    <div class="plan-container" data-plano="1">
-                        <h5>Por Consulta - Sem Verificação no Serasa</h5>
-                        <p>R$ 15 por consulta</p>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="nome" class="form-label">Nome</label>
+                        <input type="text" class="form-control" id="nome" name="nome" required>
                     </div>
-                    <div class="plan-container" data-plano="2">
-                        <h5>Por Consulta - Com Verificação no Serasa</h5>
-                        <p>R$ 25 por consulta</p>
+                    <div class="col-md-6 mb-3">
+                        <label for="telefone" class="form-label">Telefone</label>
+                        <input type="text" class="form-control" id="telefone" name="telefone" required>
                     </div>
-                    <div class="plan-container" data-plano="3">
-                        <h5>Mensal - Sem Verificação no Serasa</h5>
-                        <p>R$ 130 por mês</p>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="cpf" class="form-label">CPF</label>
+                        <input type="text" class="form-control" id="cpf" name="cpf" placeholder="Opcional se CNPJ preenchido">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="cnpj" class="form-label">CNPJ</label>
+                        <input type="text" class="form-control" id="cnpj" name="cnpj" placeholder="Opcional se CPF preenchido">
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="endereco" class="form-label">Endereço</label>
+                        <input type="text" class="form-control" id="endereco" name="endereco" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="empresa" class="form-label">Empresa</label>
+                        <input type="text" class="form-control" id="empresa" name="empresa">
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="atividade" class="form-label">Atividade</label>
+                        <input type="text" class="form-control" id="atividade" name="atividade">
                     </div>
                 </div>
 
-                <input type="hidden" name="plano" id="plano" value="">
+                <!-- Campos de Email e Senha com a Senha abaixo do Email -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                </div>
 
-                <button type="submit" class="btn btn-primary w-100" style="background-color: #9500ff;">Cadastrar</button>
+                <div class="row">
+                    <div class="col-md-6 mb-3 password-container">
+                        <label for="senha" class="form-label">Senha</label>
+                        <input type="password" class="form-control" id="senha" name="senha" required>
+                        <i class="fa-solid fa-eye eye-icon" id="togglePassword"></i>
+                    </div>
+                </div>
+
+                <!-- Seleção de Plano -->
+                <div class="plan-container">
+                    <h3>Plano</h3>
+                    <div class="plan-option" onclick="selectPlan(this, '1')">
+                        <div class="plan-title">Por Consulta - Sem Verificação no Serasa</div>
+                        <div class="plan-price">R$ 15 por consulta</div>
+                    </div>
+                    <div class="plan-option" onclick="selectPlan(this, '2')">
+                        <div class="plan-title">Por Consulta - Com Verificação no Serasa</div>
+                        <div class="plan-price">R$ 25 por consulta</div>
+                    </div>
+                    <div class="plan-option" onclick="selectPlan(this, '3')">
+                        <div class="plan-title">Mensal - Sem Verificação no Serasa</div>
+                        <div class="plan-price">R$ 130 por mês</div>
+                    </div>
+                    <input type="hidden" name="plano_id" id="plano_id" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mt-3">Cadastrar</button>
+                <a href="/login" class="btn-back w-100 mt-3">Voltar ao Login</a>
             </form>
-            <div class="text-center back-button">
-                <a href="{{ url_for('login') }}" class="btn btn-secondary">Voltar ao Login</a>
-            </div>
         </div>
     </div>
 
     <script>
         const togglePassword = document.getElementById('togglePassword');
         const passwordField = document.getElementById('senha');
+        const planoInput = document.getElementById('plano_id');
 
         togglePassword.addEventListener('click', function () {
-            // teste
             const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordField.setAttribute('type', type);
-
-           
             this.classList.toggle('fa-eye-slash');
         });
 
-        const planContainers = document.querySelectorAll('.plan-container');
-        const planoInput = document.getElementById('plano');
-
-        planContainers.forEach(container => {
-            container.addEventListener('click', function() {
-                
-                planContainers.forEach(c => c.classList.remove('selected'));
-                
-               
-                this.classList.add('selected');
-
-                
-                planoInput.value = this.getAttribute('data-plano');
-            });
-        });
+        function selectPlan(element, planId) {
+            const options = document.querySelectorAll('.plan-option');
+            options.forEach(option => option.classList.remove('selected'));
+            element.classList.add('selected');
+            planoInput.value = planId;
+        }
     </script>
 </body>
 </html>

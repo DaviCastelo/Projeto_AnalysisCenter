@@ -57,17 +57,62 @@
             color: #333;
         }
 
-        #btn-consultar {
+        .btn-azul {
             border: none;
             background-color: rgb(0, 5, 125);
             color: #fff;
-            padding: 1rem 0;
-            border-radius: 1rem;
+            padding: .7rem 0;
+            width: 90%;
+            border-radius: .8rem;
             cursor: pointer;
-            font-size: large;
+            font-size: 1rem;
             font-weight: 600;
         }
         
+        .btn-azul-multas {
+            border: none;
+            background-color: rgb(0, 5, 125);
+            color: #fff;
+            padding: .7rem 0;
+            width: 40%;
+            border-radius: .8rem;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        .container-principal {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            justify-content: start;
+            width: 100%;
+            height: 90vh;
+            gap: 2rem;
+        }
+
+        #consulta-form {
+            width: 100% !important;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            box-shadow: 14px 7px 39px -21px rgba(0,0,0,0.75);
+            border-radius: 1rem;
+        }
+
+        .input-form {
+            width: calc(100% - 22px); 
+            overflow-y: hidden; 
+            padding: 10px; 
+            border: 1px solid #dddddd; 
+            border-radius: 5px;
+        }
+
+        .campos {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+        }
     </style>
 </head>
 
@@ -103,52 +148,101 @@
     </button>
 
     <div class="main">
-        <div class="wrapper">
-            <div class="center-content">
-                <h1>Preencha as Informações</h1>
-                <form id="consulta-form" action="/generate_pdf" method="post">
-                    <label for="name">Nome Completo:</label><br>
-                    <input type="text" id="name" name="name" required><br><br>
-
-                    <label for="cpf">CPF:</label><br>
-                    <input type="text" id="cpf" name="cpf" required><br>
-
-                    <br />
-                    <button type="button" id="btn-consultar" onclick="consultarCPF()">Consultar</button><br><br>
-                    <div id="loading" style="display: none; font-size: large; font-weight: 600;">Carregando...</div>
-                    
-                    <div id="cpf-info"></div>
-                    <br />
-
-                    <label for="dob">Data de Nascimento:</label><br>
-                    <input type="date" id="dob" name="dob"><br><br>
-
-                    <label for="telefone">Telefone:</label><br>
-                    <input type="text" id="telefone" name="telefone"><br><br>
-
-                    <label for="email">Email:</label><br>
-                    <input type="text" id="email" name="email"><br><br>
-
-                    <label for="rg">RG:</label><br>
-                    <input type="text" id="rg" name="rg"><br><br>
-
-                    <label for="address">Endereço:</label><br>
-                    <textarea id="address" name="address" rows="1"
-                        style="width: calc(100% - 22px); overflow-y: hidden; padding: 10px; border: 1px solid #dddddd; border-radius: 5px;"
-                        oninput="adjustHeight(this)" required></textarea><br><br>
-
-                    <script>
-                        function adjustHeight(element) {
-                            element.style.height = "auto";
-                            element.style.height = (element.scrollHeight) + "px";
-                        }
-                    </script>
-
-                    <!-- <button type="submit" class="btn-presenca">Gerar PDF</button> -->
-                </form>
+        <div class="container-principal">
+            <h1>Preencha as Informações</h1>
+            <form id="consulta-form" action="/generate_pdf" method="post">
+                <div class="campos">
+                    <label for="name">Nome Completo:</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="campos">
+                    <label for="cpf">CPF:</label>
+                    <input type="text" id="cpf" name="cpf" required>
+                </div>
+                <div class="campos">
+                    <label for="numero-multas">Número de multas:</label>
+                    <input type="number" id="numero-multas" name="numero-multas" min="0" class="input-form" onchange="gerarCamposMultas()">
+                </div>
+                <div class="campos">
+                    <label>&nbsp;</label>
+                    <button type="button" class="btn-azul" id="btn-adicionar-multas" onclick="abrirModal()">Adicionar multas</button>
+                </div>
+                <div class="campos">
+                    <label>&nbsp;</label>
+                    <button type="button" class="btn-azul" id="btn-consultar" onclick="consultarCPF()">Consultar CPF</button>                  
+                </div>
+                <div class="campos">
+                    <label for="dob">Data de Nascimento:</label>
+                    <input type="date" id="dob" name="dob">
+                </div>
+                <div class="campos">
+                    <label for="telefone">Telefone:</label>
+                    <input type="text" id="telefone" name="telefone">
+                </div>
+                <div class="campos">
+                    <label for="email">Email:</label>
+                    <input type="text" id="email" name="email">
+                </div>
+                <div class="campos">
+                    <label for="rg">RG:</label>
+                    <input type="text" id="rg" name="rg">
+                </div>
+                <div class="campos">
+                    <label for="address">Endereço:</label>
+                    <textarea id="address" name="address" rows="1" class="input-form" style="width: calc(200% - 22px);" oninput="adjustHeight(this)" required></textarea>
+                </div>
+                <div class="campos"></div>
+                <div id="cpf-info"></div>
+            </form>
+            <div id="loading" style="display: none; font-size: large; font-weight: 600; width: 100%; text-align: center;">Carregando...</div>
+        </div>
+    </div>
+    
+    <div id="modal-multas" style="overflow-y: auto; display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+        <div style="overflow-y: auto; background-color: #fff; margin: 10% auto; padding: 20px; width: 50%; border-radius: .8rem; position: relative;">
+            <h2>Adicionar Multas</h2>
+            <div id="multas-container"></div> 
+            <div class="campos">
+                <button type="button" class="btn-azul-multas" onclick="fecharModal()">Salvar</button>
+                <button type="button" class="btn-azul-multas" onclick="fecharModal()">Cancelar</button>
             </div>
         </div>
     </div>
+    
+    <script>
+        function adjustHeight(element) {
+            element.style.height = "auto";
+            element.style.height = (element.scrollHeight) + "px";
+        }
+    
+        function abrirModal() {
+            document.getElementById("modal-multas").style.display = "block";
+        }
+    
+        function fecharModal() {
+            document.getElementById("modal-multas").style.display = "none";
+        }
+    
+        function gerarCamposMultas() {
+            const numeroDeMultas = parseInt(document.getElementById("numero-multas").value);
+            const multasContainer = document.getElementById("multas-container");
+            
+            multasContainer.innerHTML = '';
+    
+            for (let i = 1; i <= numeroDeMultas; i++) {
+                const multaDiv = document.createElement("div");
+                multaDiv.classList.add("campos");
+                multaDiv.innerHTML = `
+                    <h3 style="margin-top: 1rem;">Multa ${i}</h3>
+                    <label for="pontuacao_${i}">Pontuação:</label>
+                    <input class="input-form" type="text" id="pontuacao_${i}" name="pontuacao_${i}">
+                    <label for="descricao_${i}">Descrição da Multa:</label>
+                    <input class="input-form" type="text" id="descricao_${i}" name="descricao_${i}">
+                `;
+                multasContainer.appendChild(multaDiv);
+            }
+        }
+    </script>
 
     <script>
         function toggleSidebar() {
@@ -272,8 +366,8 @@
                                     ? pessoaFisica.Emails[0].EnderecoEmail
                                     : 'Email não informado';
 
-                                const dataNascimento = pessoaFisica.DataNascimento 
-                                    ? new Date(pessoaFisica.DataNascimento).toISOString().split('T')[0] 
+                                const dataNascimento = pessoaFisica.DataNascimento
+                                    ? new Date(pessoaFisica.DataNascimento).toISOString().split('T')[0]
                                     : 'Data de nascimento não informada';
 
                                 const rg = pessoaFisica.RG || 'RG não informado';
@@ -314,6 +408,17 @@
                                 const form = document.getElementById("consulta-form");
                                 const formData = new FormData(form);
                                 formData.append('situacao', situacaoReceitaBancoDados);
+                                const multasArray = [];
+                                
+                                const numeroDeMultas = parseInt(document.getElementById("numero-multas").value);
+                                for (let i = 1; i <= numeroDeMultas; i++) {
+                                    const pontuacao = document.getElementById(`pontuacao_${i}`).value;
+                                    const descricao = document.getElementById(`descricao_${i}`).value;
+
+                                    multasArray.push({ pontuacao: pontuacao, descricao: descricao });
+                                }
+
+                                formData.append('multas', JSON.stringify(multasArray));
 
                                 if (dataValidacaoFiscal.Processos && Array.isArray(dataValidacaoFiscal.Processos)) {
                                     if (dataValidacaoFiscal.Processos.length > 0) {

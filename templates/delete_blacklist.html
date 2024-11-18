@@ -97,7 +97,7 @@
         <div class="wrapper">
             <div class="center-content">
                 <h1>Excluir CPF da Black List</h1>
-                <form action="{{ url_for('delete_blacklist') }}" method="post">
+                <form action="{{ url_for('delete_blacklist') }}" style="max-width: 500px;" method="post">
                     <label for="cpf_delete">Digite o CPF para excluir:</label><br>
                     <input type="text" id="cpf_delete" name="cpf" required><br><br>
                     <button type="submit" class="btn-presenca">Excluir</button>

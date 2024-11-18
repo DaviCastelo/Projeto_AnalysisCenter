@@ -50,23 +50,34 @@ def index():
 def register():
     if request.method == 'POST':
         cpf = request.form.get('cpf', '')
+        cnpj = request.form.get('cnpj', '')
+        endereco = request.form.get('endereco', '')
+        telefone = request.form.get('telefone', '')
+        empresa = request.form.get('empresa', '')
+        atividade = request.form.get('atividade', '')
         senha = request.form.get('senha', '')
         nome = request.form.get('nome', '')
-        email = request.form.get('email', '')  # Armazenar o e-mail, mas não usar para login
+        email = request.form.get('email', '')  
         
+        # Ajuste para plano_id: atribuir None se estiver vazio
+        plano_id = request.form.get('plano') or None  
+
         hashed_password = generate_password_hash(senha)
 
         connection = connect_to_database()
         if connection:
             cursor = connection.cursor()
-            query = "INSERT INTO users (cpf, senha, nome, email) VALUES (%s, %s, %s, %s)"
+            query = """
+                INSERT INTO users (cpf, cnpj, endereco, telefone, empresa, atividade, senha, nome, email, plano_id) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
             try:
-                cursor.execute(query, (cpf, hashed_password, nome, email))
+                cursor.execute(query, (cpf, cnpj, endereco, telefone, empresa, atividade, hashed_password, nome, email, plano_id))
                 connection.commit()
                 flash('Registro realizado com sucesso! Faça o login.')
                 return redirect(url_for('login'))
             except mysql.connector.IntegrityError:
-                flash('CPF já cadastrado. Tente outro.')
+                flash('CPF ou CNPJ já cadastrado. Tente outro.')
                 return redirect(url_for('register'))
             finally:
                 cursor.close()
@@ -257,6 +268,9 @@ def generate_pdf_cpf():
         processos = request.form.getlist('processo[]')
         partes = request.form.getlist('partes[]')
 
+        multas_json = request.form.get('multas', '[]')  
+        multas = json.loads(multas_json)
+
         pdf = FPDF()
 
         pdf.set_left_margin(0)
@@ -289,10 +303,11 @@ def generate_pdf_cpf():
             "A Lei Geral de Proteção de Dados Pessoais - LGPD (Lei n. 13.709, de 2018) dispõe sobre a proteção de dados pessoais das pessoas. Portanto, o conteúdo deverá ser apenas para o seu conhecimento e declara ciência que todas as informações contidas no corpo da consulta são apenas para sua orientação."
         )
 
-        pdf.ln()
 
         current_datetime = datetime.now().strftime('%d/%m/%Y %H:%M')
         pdf.cell(0, 10, current_datetime, 0, 1, 'R')  
+
+#----------------------------------------DADOS PESSOAIS---------------------------------------
 
         pdf.set_fill_color(0, 5, 125)
         pdf.set_text_color(255, 255, 255)
@@ -329,10 +344,50 @@ def generate_pdf_cpf():
         pdf.cell(0, 10, rg, 0, 1)
 
         pdf.set_font('Arial', 'B', 12)
-        pdf.cell(20, 10, 'Endereço:', 0, 0)
+        pdf.cell(23, 10, 'Endereço:', 0, 0)
         pdf.set_font('Arial', '', 12)
         pdf.multi_cell(0, 10, endereco, 0, 1)
         pdf.cell(0, 10, '', 0, 1)
+
+#--------------------------------------MULTAS-----------------------------------------
+
+        pdf.set_fill_color(0, 5, 125)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_font('Arial', 'B', 14)
+        pdf.cell(0, 10, 'PRONTUÁRIO DA CNH', 0, 1, 'C', 1)
+        pdf.cell(0, 10, '', 0, 1)
+        
+        pdf.set_text_color(0, 0, 0)
+
+        if multas:
+            pdf.set_font('Arial', 'B', 12)
+            pdf.cell(0, 10, f'MULTAS: {len(multas)}', 0, 1)
+            pdf.set_font('Arial', 'B', 10)
+            pdf.cell(40, 10, 'Pontos', 1)
+            pdf.cell(pdf.w - 50, 10, 'Descrição da Infração', 1) 
+            pdf.ln()
+
+            pdf.set_font('Arial', '', 10)
+            total_pontos = 0
+            for multa in multas:
+                pontuacao = multa.get('pontuacao', 0)
+                descricao = multa.get('descricao', '')
+
+                total_pontos += int(pontuacao)
+                pdf.cell(40, 10, str(pontuacao), 1)
+                pdf.cell(pdf.w - 50, 10, descricao, 1) 
+                pdf.ln()
+
+            pdf.set_font('Arial', 'B', 12)
+            pdf.cell(0, 10, f'TOTAL DE PONTOS: {total_pontos}', 0, 1)
+            pdf.cell(0, 10, '', 0, 1)
+
+        else:
+            pdf.set_font('Arial', 'B', 14)
+            pdf.cell(0, 10, 'Não consta multas até a presente data.', 0, 1)
+            pdf.cell(0, 10, '', 0, 1)
+
+#---------------------------------------MANDADOS DE PRISÃO----------------------------------------
 
         pdf.set_fill_color(0, 5, 125)
         pdf.set_text_color(255, 255, 255)
@@ -343,6 +398,8 @@ def generate_pdf_cpf():
         pdf.cell(0, 10, f'{mandado}', 0, 1)
         pdf.cell(0, 10, '', 0, 1)
 
+# ----------------------------------------ANÁLISE JUDICIAL---------------------------------------
+
         pdf.set_fill_color(0, 5, 125)
         pdf.set_text_color(255, 255, 255)
         pdf.set_font('Arial', 'B', 14)
@@ -352,7 +409,44 @@ def generate_pdf_cpf():
         pdf.set_font('Arial', '', 12)
         pdf.cell(0, 10, '', 0, 1)
 
-        print("Processos recebidos:", processos) 
+        count_requerente = 0
+        count_requerido = 0
+
+        if processos:
+            for processo in processos:
+                if processo.strip():
+                    try:
+                        processo_data = json.loads(processo)
+                        partes = processo_data.get("Partes", [])
+                        if partes:
+                            for parte in partes:
+                                parte_nome = parte.get("Nome", "").lower()
+                                tipo = parte.get("Tipo", "").lower()
+                                nome_principal = nome.lower()
+
+                                if nome_principal in parte_nome:
+                                    if "requerente" in tipo:
+                                        count_requerente += 1
+                                    elif "requerido" in tipo:
+                                        count_requerido += 1
+                    except Exception as e:
+                        print(f"Erro ao processar o processo: {str(e)}")
+
+        pdf.set_font('Arial', 'B', 12)
+
+        pdf.set_fill_color(0, 5, 125) 
+        pdf.set_text_color(255, 255, 255)  
+        pdf.cell(85, 10, f'Requerente: {count_requerente}', 0, 0, 'C', True)
+
+        pdf.set_fill_color(255, 255, 255)
+        pdf.cell(22, 10, '', 0, 0, '', True) 
+
+        pdf.set_fill_color(156, 25, 38)
+        pdf.set_text_color(255, 255, 255)  
+        pdf.cell(85, 10, f'Requerido: {count_requerido}', 0, 1, 'C', True)
+
+        pdf.set_text_color(0, 0, 0)
+        pdf.cell(0, 10, '', 0, 1)
 
         if processos:
             for processo in processos:
@@ -362,15 +456,37 @@ def generate_pdf_cpf():
 
                         pdf.line(10, pdf.get_y(), 200, pdf.get_y())
                         pdf.cell(0, 10, '', 0, 1)
-                        pdf.cell(0, 10, f'Número do Processo: {processo_data.get("Numero", "N/A")}', 0, 1)
-                        pdf.cell(0, 10, f'Tipo: {processo_data.get("Tipo", "N/A")}', 0, 1)
-                        pdf.multi_cell(0, 10, f'Nome do Tribunal: {processo_data.get("TribunalNome", "N/A")}', 0, 1)
-                        pdf.cell(0, 10, f'Tipo do Tribunal: {processo_data.get("TribunalTipo", "N/A")}', 0, 1)
-                        pdf.multi_cell(0, 10, f'Assunto: {processo_data.get("Assunto", "N/A")}', 0, 1)
-                        pdf.cell(0, 10, f'Situação: {processo_data.get("Situacao", "N/A")}', 0, 1)
+                        pdf.set_font('Arial', 'B', 12)
+                        pdf.cell(50, 10, 'Número do Processo:', 0, 0)
+                        pdf.set_font('Arial', '', 12)
+                        pdf.cell(0, 10, processo_data.get("Numero", "N/A"), 0, 1)
+
+                        pdf.set_font('Arial', 'B', 12)
+                        pdf.cell(10, 10, 'Tipo:', 0, 0)
+                        pdf.set_font('Arial', '', 12)
+                        pdf.cell(0, 10, processo_data.get("Tipo", "N/A"), 0, 1)
+
+                        pdf.set_font('Arial', 'B', 12)
+                        pdf.cell(40, 10, 'Nome do Tribunal:', 0, 0)
+                        pdf.set_font('Arial', '', 12)
+                        pdf.cell(0, 10, processo_data.get("TribunalNome", "N/A"), 0, 1)
+
+                        pdf.set_font('Arial', 'B', 12)
+                        pdf.cell(40, 10, 'Tipo do Tribunal:', 0, 0)
+                        pdf.set_font('Arial', '', 12)
+                        pdf.cell(0, 10, processo_data.get("TribunalTipo", "N/A"), 0, 1)
+
+                        pdf.set_font('Arial', 'B', 12)
+                        pdf.cell(20, 10, 'Assunto:', 0, 0)
+                        pdf.set_font('Arial', '', 12)
+                        pdf.cell(0, 10, processo_data.get("Assunto", "N/A"), 0, 1)
+
+                        pdf.set_font('Arial', 'B', 12)
+                        pdf.cell(20, 10, 'Situação:', 0, 0)
+                        pdf.set_font('Arial', '', 12)
+                        pdf.cell(0, 10, processo_data.get("Situacao", "N/A"), 0, 1)
 
                         ultima_atualizacao_str = processo_data.get("UltimaAtualizacaoData", "N/A")
-
                         if ultima_atualizacao_str != "N/A":
                             try:
                                 ultima_atualizacao = datetime.fromisoformat(ultima_atualizacao_str)
@@ -380,7 +496,10 @@ def generate_pdf_cpf():
                         else:
                             ultima_atualizacao_formatada = "N/A"
 
-                        pdf.cell(0, 10, f'Data da última atualização: {ultima_atualizacao_formatada}', 0, 1)
+                        pdf.set_font('Arial', 'B', 12)
+                        pdf.cell(60, 10, 'Data da última atualização:', 0, 0)
+                        pdf.set_font('Arial', '', 12)
+                        pdf.cell(0, 10, ultima_atualizacao_formatada, 0, 1)
 
                         partes = processo_data.get("Partes", [])
                         pdf.cell(0, 10, 'Partes', 0, 1, 'C')
@@ -390,11 +509,11 @@ def generate_pdf_cpf():
 
                         if partes:
                             for parte in partes:
-                                nome = parte.get("Nome", "N/A")
-                                tipo = parte.get("Tipo", "N/A")
+                                nome_parte = parte.get("Nome", "N/A")
+                                tipo_parte = parte.get("Tipo", "N/A")
                                 pdf.set_font('Arial', 'B', 9)
-                                pdf.cell(100, 10, parte.get("Nome", "N/A"), 1)
-                                pdf.cell(100, 10, parte.get("Tipo", "N/A"), 1)
+                                pdf.cell(100, 10, nome_parte, 1)
+                                pdf.cell(100, 10, tipo_parte, 1)
                                 pdf.ln()
                                 pdf.set_font('Arial', '', 12)
                         else:

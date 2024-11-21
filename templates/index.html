@@ -438,13 +438,13 @@
 
                                 if (dataMandadosPrisão.Mandados && Array.isArray(dataMandadosPrisão.Mandados)) {
                                     if (dataMandadosPrisão.Mandados.length > 0) {
-                                        formData.append('mandado', 'Há um mandado de Prisão para esse CPF.');
+                                        formData.append('mandado', 'HÁ UM OU MAIS MANDADOS DE PRISÃO PARA ESTE CPF.');
                                         adicionarBlacklist(dataCpfCompleto.CadastroPessoaFisica.Nome, cpf, "mandado de prisão");
                                     } else {
-                                        formData.append('mandado', 'Não existem mandados de prisão para este CPF.');
+                                        formData.append('mandado', 'NÃO EXISTEM MANDADOS DE PRISAO PARA ESTE CPF.');
                                     }
                                 } else {
-                                    formData.append('mandado', 'Não existem mandados de prisão para este CPF.');
+                                    formData.append('mandado', 'NÃO EXISTEM MANDADOS DE PRISAO PARA ESTE CPF.');
                                 }
 
                                 logFormData(formData);

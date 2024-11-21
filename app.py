@@ -17,7 +17,7 @@ def connect_to_database():
             database='analysiscenter',
             user='root',
             password='gn020603'
-            # password='Filhotes3'
+            # password='nova_senha'
         )
         if connection.is_connected():
             print('Conexão ao MySQL bem-sucedida.')
@@ -326,8 +326,13 @@ def generate_pdf_cpf():
         pdf.set_font('Arial', '', 12)
         pdf.cell(35, 10, f'{cpf}', 0, 0)
         pdf.set_font('Arial', 'B', 12)
+        if situacao == 'REGULAR':
+            pdf.set_text_color(19, 136, 56)
+        else:
+            pdf.set_text_color(156, 25, 38)
         pdf.cell(0, 10, f'  {situacao}', 0, 1)  
 
+        pdf.set_text_color(0, 0, 0)
         pdf.set_font('Arial', 'B', 12)
         pdf.cell(20, 10, 'Telefone:', 0, 0)
         pdf.set_font('Arial', '', 12)
@@ -347,6 +352,17 @@ def generate_pdf_cpf():
         pdf.cell(23, 10, 'Endereço:', 0, 0)
         pdf.set_font('Arial', '', 12)
         pdf.multi_cell(0, 10, endereco, 0, 1)
+        pdf.cell(0, 10, '', 0, 1)
+
+#----------------------------------------BLACKLIST---------------------------------------
+
+        pdf.set_fill_color(156, 25, 38)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_font('Arial', 'B', 14)
+        pdf.cell(0, 10, 'BLACK LIST', 0, 1, 'C', 1)
+        pdf.cell(0, 10, '', 0, 1)
+        pdf.set_text_color(19, 136, 56)
+        pdf.cell(0, 10, 'CPF NÃO ENCONTRADO NA BLACK LIST', 0, 1, 'C')
         pdf.cell(0, 10, '', 0, 1)
 
 #--------------------------------------MULTAS-----------------------------------------
@@ -384,7 +400,8 @@ def generate_pdf_cpf():
 
         else:
             pdf.set_font('Arial', 'B', 14)
-            pdf.cell(0, 10, 'Não consta multas até a presente data.', 0, 1)
+            pdf.set_text_color(19, 136, 56)
+            pdf.cell(0, 10, 'NÃO CONSTA MULTAS ATÉ A PRESENTE DATA.', 0, 1, 'C')
             pdf.cell(0, 10, '', 0, 1)
 
 #---------------------------------------MANDADOS DE PRISÃO----------------------------------------
@@ -395,7 +412,11 @@ def generate_pdf_cpf():
         pdf.cell(0, 10, 'MANDADOS DE PRISÃO', 0, 1, 'C', 1)
         pdf.cell(0, 10, '', 0, 1)
         pdf.set_text_color(0, 0, 0)
-        pdf.cell(0, 10, f'{mandado}', 0, 1)
+        if mandado == 'NÃO EXISTEM MANDADOS DE PRISAO PARA ESTE CPF.':
+            pdf.set_text_color(19, 136, 56)
+        else:
+            pdf.set_text_color(156, 25, 38)
+        pdf.cell(0, 10, f'{mandado}', 0, 1, 'C')
         pdf.cell(0, 10, '', 0, 1)
 
 # ----------------------------------------ANÁLISE JUDICIAL---------------------------------------
@@ -436,14 +457,14 @@ def generate_pdf_cpf():
 
         pdf.set_fill_color(0, 5, 125) 
         pdf.set_text_color(255, 255, 255)  
-        pdf.cell(85, 10, f'Requerente: {count_requerente}', 0, 0, 'C', True)
+        pdf.cell(85, 10, f'Como requerente: {count_requerente}', 0, 0, 'C', True)
 
         pdf.set_fill_color(255, 255, 255)
         pdf.cell(22, 10, '', 0, 0, '', True) 
 
         pdf.set_fill_color(156, 25, 38)
         pdf.set_text_color(255, 255, 255)  
-        pdf.cell(85, 10, f'Requerido: {count_requerido}', 0, 1, 'C', True)
+        pdf.cell(85, 10, f'Como requerido: {count_requerido}', 0, 1, 'C', True)
 
         pdf.set_text_color(0, 0, 0)
         pdf.cell(0, 10, '', 0, 1)
@@ -462,7 +483,7 @@ def generate_pdf_cpf():
                         pdf.cell(0, 10, processo_data.get("Numero", "N/A"), 0, 1)
 
                         pdf.set_font('Arial', 'B', 12)
-                        pdf.cell(10, 10, 'Tipo:', 0, 0)
+                        pdf.cell(15, 10, 'Tipo:', 0, 0)
                         pdf.set_font('Arial', '', 12)
                         pdf.cell(0, 10, processo_data.get("Tipo", "N/A"), 0, 1)
 
@@ -479,7 +500,7 @@ def generate_pdf_cpf():
                         pdf.set_font('Arial', 'B', 12)
                         pdf.cell(20, 10, 'Assunto:', 0, 0)
                         pdf.set_font('Arial', '', 12)
-                        pdf.cell(0, 10, processo_data.get("Assunto", "N/A"), 0, 1)
+                        pdf.multi_cell(0, 10, processo_data.get("Assunto", "N/A"))
 
                         pdf.set_font('Arial', 'B', 12)
                         pdf.cell(20, 10, 'Situação:', 0, 0)

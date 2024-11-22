@@ -432,6 +432,7 @@ def generate_pdf_cpf():
 
         count_requerente = 0
         count_requerido = 0
+        count_processos = 0
 
         if processos:
             for processo in processos:
@@ -471,11 +472,16 @@ def generate_pdf_cpf():
 
         if processos:
             for processo in processos:
+                count_processos += 1
                 if processo.strip():
                     try:
                         processo_data = json.loads(processo)
 
-                        pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+                        pdf.set_fill_color(255, 255, 255)
+                        pdf.set_text_color(0, 0, 0)  
+                        pdf.set_font('Arial', 'B', 14)
+                        pdf.cell(0, 10, f'Processo Nº: {count_processos}', 0, 1, 'C')
+
                         pdf.cell(0, 10, '', 0, 1)
                         pdf.set_font('Arial', 'B', 12)
                         pdf.cell(50, 10, 'Número do Processo:', 0, 0)
@@ -539,8 +545,7 @@ def generate_pdf_cpf():
                                 pdf.set_font('Arial', '', 12)
                         else:
                             pdf.cell(0, 10, 'Nenhuma parte envolvida.', 0, 1)
-
-                        pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+                        
                         pdf.cell(0, 10, '', 0, 1)
 
                     except Exception as e:

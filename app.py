@@ -461,7 +461,7 @@ def generate_pdf_cpf():
         pdf.cell(85, 10, f'Como requerente: {count_requerente}', 0, 0, 'C', True)
 
         pdf.set_fill_color(255, 255, 255)
-        pdf.cell(22, 10, '', 0, 0, '', True) 
+        pdf.cell(28, 10, '', 0, 0, '', True) 
 
         pdf.set_fill_color(156, 25, 38)
         pdf.set_text_color(255, 255, 255)  
@@ -477,10 +477,10 @@ def generate_pdf_cpf():
                     try:
                         processo_data = json.loads(processo)
 
-                        pdf.set_fill_color(255, 255, 255)
+                        pdf.set_fill_color(244, 249, 255)
                         pdf.set_text_color(0, 0, 0)  
                         pdf.set_font('Arial', 'B', 14)
-                        pdf.cell(0, 10, f'Processo Nº: {count_processos}', 0, 1, 'C')
+                        pdf.cell(0, 10, f'Processo Nº: {count_processos}', 0, 1, 'C', True)
 
                         pdf.cell(0, 10, '', 0, 1)
                         pdf.set_font('Arial', 'B', 12)

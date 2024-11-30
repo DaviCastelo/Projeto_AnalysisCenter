@@ -253,6 +253,14 @@ def update_blacklist():
         return redirect(url_for('blacklist'))
     
     
+def ajustar_margem(pdf):
+    if pdf.get_y() + 10 > pdf.h - 20: 
+        pdf.add_page()  
+
+        if pdf.page_no() > 1:
+            pdf.set_top_margin(15)  
+            pdf.set_y(15) 
+
 @app.route('/gerar_pdf_consulta', methods=['POST'])
 def generate_pdf_cpf():
     try:
@@ -365,6 +373,7 @@ def generate_pdf_cpf():
         pdf.cell(0, 10, 'CPF NÃO ENCONTRADO NA BLACK LIST', 0, 1, 'C')
         pdf.cell(0, 10, '', 0, 1)
 
+        ajustar_margem(pdf)
 #--------------------------------------MULTAS-----------------------------------------
 
         pdf.set_fill_color(0, 5, 125)
@@ -376,6 +385,7 @@ def generate_pdf_cpf():
         pdf.set_text_color(0, 0, 0)
 
         if multas:
+            ajustar_margem(pdf)
             pdf.set_font('Arial', 'B', 12)
             pdf.cell(0, 10, f'MULTAS: {len(multas)}', 0, 1)
             pdf.set_font('Arial', 'B', 10)
@@ -399,13 +409,14 @@ def generate_pdf_cpf():
             pdf.cell(0, 10, '', 0, 1)
 
         else:
+            ajustar_margem(pdf)
             pdf.set_font('Arial', 'B', 14)
             pdf.set_text_color(19, 136, 56)
             pdf.cell(0, 10, 'NÃO CONSTA MULTAS ATÉ A PRESENTE DATA.', 0, 1, 'C')
             pdf.cell(0, 10, '', 0, 1)
 
 #---------------------------------------MANDADOS DE PRISÃO----------------------------------------
-
+        ajustar_margem(pdf)
         pdf.set_fill_color(0, 5, 125)
         pdf.set_text_color(255, 255, 255)
         pdf.set_font('Arial', 'B', 14)
@@ -418,9 +429,11 @@ def generate_pdf_cpf():
             pdf.set_text_color(156, 25, 38)
         pdf.cell(0, 10, f'{mandado}', 0, 1, 'C')
         pdf.cell(0, 10, '', 0, 1)
+        ajustar_margem(pdf)
 
 # ----------------------------------------ANÁLISE JUDICIAL---------------------------------------
 
+        ajustar_margem(pdf)
         pdf.set_fill_color(0, 5, 125)
         pdf.set_text_color(255, 255, 255)
         pdf.set_font('Arial', 'B', 14)
@@ -436,12 +449,14 @@ def generate_pdf_cpf():
 
         if processos:
             for processo in processos:
+                ajustar_margem(pdf)
                 if processo.strip():
                     try:
                         processo_data = json.loads(processo)
                         partes = processo_data.get("Partes", [])
                         if partes:
                             for parte in partes:
+                                ajustar_margem(pdf)
                                 parte_nome = parte.get("Nome", "").lower()
                                 tipo = parte.get("Tipo", "").lower()
                                 nome_principal = nome.lower()
@@ -472,6 +487,7 @@ def generate_pdf_cpf():
 
         if processos:
             for processo in processos:
+                ajustar_margem(pdf)
                 count_processos += 1
                 if processo.strip():
                     try:
@@ -481,37 +497,44 @@ def generate_pdf_cpf():
                         pdf.set_text_color(0, 0, 0)  
                         pdf.set_font('Arial', 'B', 14)
                         pdf.cell(0, 10, f'Processo Nº: {count_processos}', 0, 1, 'C', True)
+                        ajustar_margem(pdf)
 
                         pdf.cell(0, 10, '', 0, 1)
                         pdf.set_font('Arial', 'B', 12)
                         pdf.cell(50, 10, 'Número do Processo:', 0, 0)
                         pdf.set_font('Arial', '', 12)
                         pdf.cell(0, 10, processo_data.get("Numero", "N/A"), 0, 1)
+                        ajustar_margem(pdf)
 
                         pdf.set_font('Arial', 'B', 12)
                         pdf.cell(15, 10, 'Tipo:', 0, 0)
                         pdf.set_font('Arial', '', 12)
                         pdf.cell(0, 10, processo_data.get("Tipo", "N/A"), 0, 1)
+                        ajustar_margem(pdf)
 
                         pdf.set_font('Arial', 'B', 12)
                         pdf.cell(40, 10, 'Nome do Tribunal:', 0, 0)
                         pdf.set_font('Arial', '', 12)
                         pdf.cell(0, 10, processo_data.get("TribunalNome", "N/A"), 0, 1)
+                        ajustar_margem(pdf)
 
                         pdf.set_font('Arial', 'B', 12)
                         pdf.cell(40, 10, 'Tipo do Tribunal:', 0, 0)
                         pdf.set_font('Arial', '', 12)
                         pdf.cell(0, 10, processo_data.get("TribunalTipo", "N/A"), 0, 1)
+                        ajustar_margem(pdf)
 
                         pdf.set_font('Arial', 'B', 12)
                         pdf.cell(20, 10, 'Assunto:', 0, 0)
                         pdf.set_font('Arial', '', 12)
                         pdf.multi_cell(0, 10, processo_data.get("Assunto", "N/A"))
+                        ajustar_margem(pdf)
 
                         pdf.set_font('Arial', 'B', 12)
                         pdf.cell(20, 10, 'Situação:', 0, 0)
                         pdf.set_font('Arial', '', 12)
                         pdf.cell(0, 10, processo_data.get("Situacao", "N/A"), 0, 1)
+                        ajustar_margem(pdf)
 
                         ultima_atualizacao_str = processo_data.get("UltimaAtualizacaoData", "N/A")
                         if ultima_atualizacao_str != "N/A":
@@ -523,10 +546,12 @@ def generate_pdf_cpf():
                         else:
                             ultima_atualizacao_formatada = "N/A"
 
+                        ajustar_margem(pdf)
                         pdf.set_font('Arial', 'B', 12)
                         pdf.cell(60, 10, 'Data da última atualização:', 0, 0)
                         pdf.set_font('Arial', '', 12)
                         pdf.cell(0, 10, ultima_atualizacao_formatada, 0, 1)
+                        ajustar_margem(pdf)
 
                         partes = processo_data.get("Partes", [])
                         pdf.cell(0, 10, 'Partes', 0, 1, 'C')
@@ -536,11 +561,17 @@ def generate_pdf_cpf():
 
                         if partes:
                             for parte in partes:
+                                ajustar_margem(pdf)
                                 nome_parte = parte.get("Nome", "N/A")
+                                ajustar_margem(pdf)
                                 tipo_parte = parte.get("Tipo", "N/A")
+                                ajustar_margem(pdf)
                                 pdf.set_font('Arial', 'B', 9)
+                                ajustar_margem(pdf)
                                 pdf.cell(100, 10, nome_parte, 1)
+                                ajustar_margem(pdf)
                                 pdf.cell(100, 10, tipo_parte, 1)
+                                ajustar_margem(pdf)
                                 pdf.ln()
                                 pdf.set_font('Arial', '', 12)
                         else:
